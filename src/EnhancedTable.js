@@ -85,31 +85,31 @@ const headCells = [
     id: 'name',
     numeric: false,
     disablePadding: true,
-    label: 'Dessert (100g serving)',
+    label: 'Item name',
   },
   {
     id: 'calories',
     numeric: true,
     disablePadding: false,
-    label: 'Calories',
+    label: 'Days left',
   },
   {
     id: 'fat',
     numeric: true,
     disablePadding: false,
-    label: 'Fat (g)',
+    label: 'Date added',
   },
   {
     id: 'carbs',
     numeric: true,
     disablePadding: false,
-    label: 'Carbs (g)',
+    label: 'Expiry date',
   },
   {
     id: 'protein',
     numeric: true,
     disablePadding: false,
-    label: 'Protein (g)',
+    label: 'Cost ($)',
   },
 ];
 
@@ -125,7 +125,7 @@ function EnhancedTableHead(props) {
   };
 
   return (
-    <TableHead>
+    <TableHead className="Table-header">
       <TableRow>
         <TableCell padding="checkbox">
           <Checkbox
@@ -134,7 +134,7 @@ function EnhancedTableHead(props) {
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
             inputProps={{
-              'aria-label': 'select all desserts',
+              'aria-label': 'select all',
             }}
           />
         </TableCell>
@@ -178,6 +178,7 @@ function EnhancedTableToolbar(props) {
 
   return (
     <Toolbar
+      className='Table-toolbar'
       sx={{
         pl: { sm: 2 },
         pr: { xs: 1, sm: 1 },
@@ -203,7 +204,7 @@ function EnhancedTableToolbar(props) {
           id="tableTitle"
           component="div"
         >
-          Nutrition
+          Inventory
         </Typography>
       )}
 
@@ -421,6 +422,7 @@ export default function EnhancedTable() {
           </Table>
         </TableContainer>
         <TablePagination
+          className='Table-footer'
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
           count={rows.length}
