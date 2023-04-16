@@ -21,32 +21,15 @@ import Switch from '@mui/material/Switch';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
+import FormControl from '@mui/material/FormControl';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import AddItemForm from './AddItemForm';
 
-function createData(name, calories, fat, carbs, protein) {
-  return {
-    name,
-    calories,
-    fat,
-    carbs,
-    protein,
-  };
+Date.prototype.addDays = function(days) {
+  var date = new Date(this.valueOf());
+  date.setDate(date.getDate() + days);
+  return date;
 }
-
-const rows = [
-  createData('Cupcake', 305, 3.7, 67, 4.3),
-  createData('Donut', 452, 25.0, 51, 4.9),
-  createData('Eclair', 262, 16.0, 24, 6.0),
-  createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
-  createData('Gingerbread', 356, 16.0, 49, 3.9),
-  createData('Honeycomb', 408, 3.2, 87, 6.5),
-  createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
-  createData('Jelly Bean', 375, 0.0, 94, 0.0),
-  createData('KitKat', 518, 26.0, 65, 7.0),
-  createData('Lollipop', 392, 0.2, 98, 0.0),
-  createData('Marshmallow', 318, 0, 81, 2.0),
-  createData('Nougat', 360, 19.0, 9, 37.0),
-  createData('Oreo', 437, 18.0, 63, 4.0),
-];
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -88,25 +71,25 @@ const headCells = [
     label: 'Item name',
   },
   {
-    id: 'calories',
+    id: 'days_left',
     numeric: true,
     disablePadding: false,
     label: 'Days left',
   },
   {
-    id: 'fat',
+    id: 'date_added',
     numeric: true,
     disablePadding: false,
     label: 'Date added',
   },
   {
-    id: 'carbs',
+    id: 'expiry_date',
     numeric: true,
     disablePadding: false,
     label: 'Expiry date',
   },
   {
-    id: 'protein',
+    id: 'cost',
     numeric: true,
     disablePadding: false,
     label: 'Cost ($)',
@@ -114,8 +97,8 @@ const headCells = [
 ];
 
 const DEFAULT_ORDER = 'asc';
-const DEFAULT_ORDER_BY = 'calories';
-const DEFAULT_ROWS_PER_PAGE = 5;
+const DEFAULT_ORDER_BY = 'days_left';
+const DEFAULT_ROWS_PER_PAGE = 10;
 
 function EnhancedTableHead(props) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } =
@@ -210,16 +193,21 @@ function EnhancedTableToolbar(props) {
 
       {numSelected > 0 ? (
         <Tooltip title="Delete">
-          <IconButton>
+          <IconButton onClick={props.delete}>
             <DeleteIcon />
           </IconButton>
         </Tooltip>
       ) : (
-        <Tooltip title="Filter list">
-          <IconButton>
-            <FilterListIcon />
-          </IconButton>
-        </Tooltip>
+        // <Tooltip title="Filter list">
+        //   <IconButton>
+        //     <FilterListIcon />
+        //   </IconButton>
+        // </Tooltip>
+        <Typography
+          component="div"
+        >
+          Today: {new Date().toLocaleDateString()}
+        </Typography>
       )}
     </Toolbar>
   );
@@ -227,18 +215,24 @@ function EnhancedTableToolbar(props) {
 
 EnhancedTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
+  delete: PropTypes.func.isRequired,
 };
 
-export default function EnhancedTable() {
+export default function EnhancedTable(props) {
   const [order, setOrder] = React.useState(DEFAULT_ORDER);
   const [orderBy, setOrderBy] = React.useState(DEFAULT_ORDER_BY);
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(false);
   const [visibleRows, setVisibleRows] = React.useState(null);
   const [rowsPerPage, setRowsPerPage] = React.useState(DEFAULT_ROWS_PER_PAGE);
   const [paddingHeight, setPaddingHeight] = React.useState(0);
 
+  var rows = props.rows.map((row) => ({
+    ...row,
+    days_left: Math.ceil((new Date(row.expiry_date) - new Date()) / (1000 * 60 * 60 * 24)),
+    cost: row.cost.toFixed(2),
+  }));
+  
   React.useEffect(() => {
     let rowsOnMount = stableSort(
       rows,
@@ -316,10 +310,10 @@ export default function EnhancedTable() {
       const numEmptyRows =
         newPage > 0 ? Math.max(0, (1 + newPage) * rowsPerPage - rows.length) : 0;
 
-      const newPaddingHeight = (dense ? 33 : 53) * numEmptyRows;
+      const newPaddingHeight = 33 * numEmptyRows;
       setPaddingHeight(newPaddingHeight);
     },
-    [order, orderBy, dense, rowsPerPage],
+    [order, orderBy, rowsPerPage],
   );
 
   const handleChangeRowsPerPage = React.useCallback(
@@ -343,21 +337,29 @@ export default function EnhancedTable() {
     [order, orderBy],
   );
 
-  const handleChangeDense = (event) => {
-    setDense(event.target.checked);
-  };
+  const deleteSelected = React.useCallback(
+    (event) => {
+      // remove selected rows from rows and update firebase
+      const updatedRows = rows.filter((row) => !selected.includes(row.name));
+      props.updateRows(updatedRows);
+      setVisibleRows(updatedRows);
+      // clear selected rows
+      setSelected([]);
+    }, 
+    [selected],
+  );
 
   const isSelected = (name) => selected.indexOf(name) !== -1;
 
   return (
     <Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
-        <EnhancedTableToolbar numSelected={selected.length} />
+        <EnhancedTableToolbar numSelected={selected.length} delete={deleteSelected} />
         <TableContainer>
           <Table
             sx={{ minWidth: 750 }}
             aria-labelledby="tableTitle"
-            size={dense ? 'small' : 'medium'}
+            size={'small'}
           >
             <EnhancedTableHead
               numSelected={selected.length}
@@ -383,6 +385,8 @@ export default function EnhancedTable() {
                         key={row.name}
                         selected={isItemSelected}
                         sx={{ cursor: 'pointer' }}
+                        // if expiry date has passed, highlight row
+                        style={new Date(row.expiry_date) < new Date() ? { backgroundColor: '#ffcccc' } : null}
                       >
                         <TableCell padding="checkbox">
                           <Checkbox
@@ -401,10 +405,10 @@ export default function EnhancedTable() {
                         >
                           {row.name}
                         </TableCell>
-                        <TableCell align="right">{row.calories}</TableCell>
-                        <TableCell align="right">{row.fat}</TableCell>
-                        <TableCell align="right">{row.carbs}</TableCell>
-                        <TableCell align="right">{row.protein}</TableCell>
+                        <TableCell align="right">{row.days_left}</TableCell>
+                        <TableCell align="right">{row.date_added}</TableCell>
+                        <TableCell align="right">{row.expiry_date}</TableCell>
+                        <TableCell align="right">{row.cost}</TableCell>
                       </TableRow>
                     );
                   })
@@ -432,10 +436,7 @@ export default function EnhancedTable() {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
-      <FormControlLabel
-        control={<Switch checked={dense} onChange={handleChangeDense} />}
-        label="Dense padding"
-      />
+      <AddItemForm />
     </Box>
   );
 }

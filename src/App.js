@@ -18,29 +18,27 @@ class App extends React.Component {
       <div className="App">
         <header className="App-header">
         </header>
+          <div className="App-body">
+            <Box sx={{ minWidth: 120 }} marginBottom={5}>
+              <EnhancedTable rows={this.props.itemList} updateRows={this.props.updateRows} />
+            </Box>
 
-        <div className="App-body">
-          <Box sx={{ minWidth: 120 }} marginBottom={5}>
-            <EnhancedTable />
-          </Box>
-
-          <Box sx={{ minWidth: 120 }}>
-            <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label">Chart</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={10}
-                label="Age"
-              >
-                <MenuItem value={10}>Analytic 1</MenuItem>
-                <MenuItem value={20}>Analytic 2</MenuItem>
-                <MenuItem value={30}>Analytic 3</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-
-        </div>
+            <Box sx={{ minWidth: 120 }}>
+              <FormControl fullWidth>
+                <InputLabel id="demo-simple-select-label">Chart</InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  value={10}
+                  label="Age"
+                >
+                  <MenuItem value={10}>Analytic 1</MenuItem>
+                  <MenuItem value={20}>Analytic 2</MenuItem>
+                  <MenuItem value={30}>Analytic 3</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </div>
       </div>
       
     );
