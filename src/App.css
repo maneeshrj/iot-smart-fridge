@@ -1,6 +1,6 @@
 body {
   min-height: 100vh;
-  background-color: #8f9299;
+  background-color: bisque;
 }
 
 .App {
@@ -27,18 +27,16 @@ body {
 .App-body {
   width: 50%;
   padding: 1em;
-  background-color: white;
+  background-color: whitesmoke;
 }
 
 @media only screen and (max-width: 600px) {
   .App-body {
     width: 100%;
-    padding: 0;
+    padding-left: 0;
+    padding-right: 0;
+    margin: 0.5em;
   }
-}
-
-.App-link {
-  color: #61dafb;
 }
 
 @keyframes App-logo-spin {
@@ -48,8 +46,4 @@ body {
   to {
     transform: rotate(360deg);
   }
-}
-
-.Table-header, .Table-toolbar, .Table-footer {
-  background-color: #eef1f7;
 }

@@ -23,32 +23,89 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
 import FormControl from '@mui/material/FormControl';
 import Grid from '@mui/material/Grid';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
 
 import dayjs from 'dayjs';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import AddIcon from '@mui/icons-material/Add';
 
 export default function AddItemForm(props) {
-    const [value, setValue] = React.useState(dayjs());
-    return (
-        <Grid container spacing={2}>
-            <Grid item xs={8}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                        label="Expiry Date"
-                        value={value}
-                        onChange={(newValue) => {
-                            setValue(newValue);
+    const [date, setDate] = React.useState(dayjs());
+    const [show, setShow] = React.useState(false);
+
+    const handleSubmit = () => {
+        setShow(false);
+    };
+    
+    return show ? (
+        <Paper
+            margin={2}
+            sx={{
+                p: 2,
+                display: 'flex',
+                flexDirection: 'column',
+            }}
+            className='AddItemForm'
+        >
+            <Grid container spacing={2}>
+                <Grid item md={7}>
+                    <TextField id="outlined-basic" label="Item Name" variant="outlined" fullWidth />
+                </Grid>
+                <Grid item md={5}>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                            label="Expiry Date"
+                            value={date}
+                            onChange={(newValue) => {
+                                setDate(newValue);
+                            }}
+                            sx={{ width: '100%' }}
+                        />
+                    </LocalizationProvider>
+                </Grid>
+                <Grid item md={12}>
+                    <Button
+                        aria-label="add"
+                        onClick={() => handleSubmit()}
+                        variant="outlined"
+                        sx={{
+                            alignSelf: 'center',
+                            justifySelf: 'center',
+                            height: '100%',
+                            width: '100%'
                         }}
-                    />
-                </LocalizationProvider>
-            </Grid>
-            <Grid item xs={4}>
-                <IconButton aria-label="add" onClick={() => props.addItem()}>
-                    <AddIcon />
-                </IconButton>
-            </Grid>
-        </Grid>
+                        color="warning"
+                    >
+                        <AddIcon />
+                    </Button>
+                </Grid>
+            </Grid>   
+        </Paper>
+    ) : (
+        <Paper
+            margin={2}
+            sx={{
+                p: 2,
+                display: 'flex',
+                flexDirection: 'column',
+            }}
+        >
+            <Button
+                aria-label="add"
+                onClick={() => setShow(true)}
+                variant="outlined"
+                sx={{
+                    alignSelf: 'center',
+                    justifySelf: 'center',
+                    height: '100%',
+                    width: '100%'
+                }}
+                color="warning"
+            >
+                Add Item
+            </Button>
+        </Paper>
     );
 }

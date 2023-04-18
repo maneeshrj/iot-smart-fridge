@@ -8,6 +8,7 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
 import EnhancedTable from './EnhancedTable';
+import Paper from '@mui/material/Paper';
 
 class App extends React.Component {
   constructor(props) {
@@ -18,12 +19,20 @@ class App extends React.Component {
       <div className="App">
         <header className="App-header">
         </header>
-          <div className="App-body">
+          <Paper 
+            className="App-body"
+            sx={{
+              m: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              bgcolor: 'linen',
+            }}
+          >
             <Box sx={{ minWidth: 120 }} marginBottom={5}>
               <EnhancedTable rows={this.props.itemList} updateRows={this.props.updateRows} />
             </Box>
 
-            <Box sx={{ minWidth: 120 }}>
+            <Paper sx={{ minWidth: 120, p: 2 }}>
               <FormControl fullWidth>
                 <InputLabel id="demo-simple-select-label">Chart</InputLabel>
                 <Select
@@ -37,8 +46,8 @@ class App extends React.Component {
                   <MenuItem value={30}>Analytic 3</MenuItem>
                 </Select>
               </FormControl>
-            </Box>
-          </div>
+            </Paper>
+          </Paper>
       </div>
       
     );

@@ -16,13 +16,8 @@ import Paper from '@mui/material/Paper';
 import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
 import DeleteIcon from '@mui/icons-material/Delete';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
-import FormControl from '@mui/material/FormControl';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import AddItemForm from './AddItemForm';
 
 Date.prototype.addDays = function(days) {
@@ -206,7 +201,7 @@ function EnhancedTableToolbar(props) {
         <Typography
           component="div"
         >
-          Today: {new Date().toLocaleDateString()}
+          {new Date().toLocaleDateString()}
         </Typography>
       )}
     </Toolbar>
