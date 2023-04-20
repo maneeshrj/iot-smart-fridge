@@ -9,11 +9,41 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
 import EnhancedTable from './EnhancedTable';
 import Paper from '@mui/material/Paper';
+import { LineChart, Line, CartesianGrid, XAxis, YAxis } from "recharts";
+
+// THIS IS DEMO DATA 
+const data0 = [
+  { name: "Page A", uv: 800, pv: 2400, amt: 2400 },
+  { name: "Page B", uv: 100, pv: 4567, amt: 2400 },
+  { name: "Page C", uv: 200, pv: 1398, amt: 2400 },
+  { name: "Page D", uv: 500, pv: 9800, amt: 2400 },
+  { name: "Page E", uv: 678, pv: 3908, amt: 2400 },
+  { name: "Page F", uv: 289, pv: 4800, amt: 2400 },
+];
+
+const data1 = [
+  { name: "Page B", uv: 100, pv: 2400, amt: 2400 },
+  { name: "Page B", uv: 200, pv: 4567, amt: 2400 },
+  { name: "Page C", uv: 300, pv: 1398, amt: 2400 },
+  { name: "Page D", uv: 400, pv: 9800, amt: 2400 },
+  { name: "Page E", uv: 580, pv: 3908, amt: 2400 },
+  { name: "Page F", uv: 689, pv: 4800, amt: 2400 },
+];
+
+const data2 = [
+  { name: "Page D", uv: 400, pv: 2400, amt: 2400 },
+  { name: "Page B", uv: 300, pv: 4567, amt: 2400 },
+  { name: "Page C", uv: 300, pv: 1398, amt: 2400 },
+  { name: "Page D", uv: 200, pv: 9800, amt: 2400 },
+  { name: "Page E", uv: 278, pv: 3908, amt: 2400 },
+  { name: "Page F", uv: 189, pv: 4800, amt: 2400 },
+];
 
 class App extends React.Component {
   constructor(props) {
     super(props);
   }
+  state = { displayData: data0 };
   render() {
     return (
       <div className="App">
@@ -32,22 +62,35 @@ class App extends React.Component {
               <EnhancedTable rows={this.props.itemList} updateRows={this.props.updateRows} />
             </Box>
 
-            <Paper sx={{ minWidth: 120, p: 2 }}>
-              <FormControl fullWidth>
-                <InputLabel id="demo-simple-select-label">Chart</InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  value={10}
-                  label="Age"
-                >
-                  <MenuItem value={10}>Analytic 1</MenuItem>
-                  <MenuItem value={20}>Analytic 2</MenuItem>
-                  <MenuItem value={30}>Analytic 3</MenuItem>
-                </Select>
-              </FormControl>
-            </Paper>
+            <Paper sx={{ minWidth: 120, p: 2, mb: 2, mt: 2 }}>
+            <FormControl fullWidth>
+              <Select
+                value={this.state.displayData}
+                onChange={(e) => {
+                  console.log(e.target.value);
+                  this.setState({ displayData: e.target.value });
+                }}
+              >
+                <MenuItem value={data0}>Analytic 1</MenuItem>
+                <MenuItem value={data1}>Analytic 2</MenuItem>
+                <MenuItem value={data2}>Analytic 3</MenuItem>
+              </Select>
+            </FormControl>
           </Paper>
+          <Paper>
+            <LineChart
+              width={600}
+              height={300}
+              data={this.state.displayData}
+              margin={{ top: 20, right: 20, bottom: 5, left: 0 }}
+            >
+              <Line type="monotone" dataKey="uv" stroke="#FFC0CB" />
+              <CartesianGrid stroke="#ccc" />
+              <XAxis dataKey="name" />
+              <YAxis />
+            </LineChart>
+          </Paper>
+        </Paper>
       </div>
       
     );
