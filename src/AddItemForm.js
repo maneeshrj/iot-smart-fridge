@@ -33,10 +33,34 @@ import AddIcon from '@mui/icons-material/Add';
 
 export default function AddItemForm(props) {
     const [date, setDate] = React.useState(dayjs());
+    const [itemName, setItemName] = React.useState('');
     const [show, setShow] = React.useState(false);
+    const [cost, setCost] = React.useState(0);
+    const [err, setErr] = React.useState('none');
 
+    const handleCostChange = (event) => {
+        setCost(event.target.value.replace(/[^0-9.]/g,''));
+    };
+    
     const handleSubmit = () => {
+        if (itemName === '') {
+            setErr('name');
+            return;
+        }
+        setErr('none');
         setShow(false);
+        const newItem = {
+            name: itemName,
+            date_added: dayjs().format('MM/DD/YYYY'),
+            expiry_date: date.format('MM/DD/YYYY'),
+            days_left: date.diff(dayjs(), 'day'),
+            cost: (cost === '') ? 0 : cost,
+        }
+        console.log(newItem);
+        props.addItem(newItem);
+        setCost(0);
+        setItemName('');
+        setDate(dayjs());
     };
     
     return show ? (
@@ -50,20 +74,35 @@ export default function AddItemForm(props) {
             className='AddItemForm'
         >
             <Grid container spacing={2}>
-                <Grid item md={7}>
-                    <TextField id="outlined-basic" label="Item Name" variant="outlined" fullWidth />
+                <Grid item md={5}>
+                    <TextField 
+                        label="Item Name" 
+                        variant="outlined" 
+                        error={err === 'name' ? true : false}
+                        fullWidth 
+                        onChange={(e) => {
+                            setItemName(e.target.value);
+                        }}
+                    />
                 </Grid>
                 <Grid item md={5}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
                             label="Expiry Date"
                             value={date}
-                            onChange={(newValue) => {
-                                setDate(newValue);
-                            }}
+                            onChange={setDate}
                             sx={{ width: '100%' }}
                         />
                     </LocalizationProvider>
+                </Grid>
+                <Grid item md={2}>
+                    <TextField
+                        label="Cost" 
+                        variant="outlined" 
+                        fullWidth 
+                        value={cost}
+                        onChange={handleCostChange}
+                    />
                 </Grid>
                 <Grid item md={12}>
                     <Button
@@ -94,7 +133,10 @@ export default function AddItemForm(props) {
         >
             <Button
                 aria-label="add"
-                onClick={() => setShow(true)}
+                onClick={() => { 
+                    setShow(true);
+                    setErr('none');
+                }}
                 variant="outlined"
                 sx={{
                     alignSelf: 'center',

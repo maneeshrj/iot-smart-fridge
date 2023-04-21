@@ -9,7 +9,7 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
 import EnhancedTable from './EnhancedTable';
 import Paper from '@mui/material/Paper';
-import { LineChart, Line, CartesianGrid, XAxis, YAxis } from "recharts";
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
 // THIS IS DEMO DATA 
 const data0 = [
@@ -42,9 +42,22 @@ const data2 = [
 class App extends React.Component {
   constructor(props) {
     super(props);
+    this.state = { 
+      displayData: 'analytic1' 
+    };
   }
-  state = { displayData: data0 };
+
+  handleAnalyticSelect = (event) => {
+    console.log(event.target.value);
+    this.setState((prevState) => ({ 
+      ...prevState,
+      displayData: event.target.value 
+    }));
+  };
+
   render() {
+    var itemList = this.props.userData.items;
+    itemList = itemList==='empty' ? [] : itemList;
     return (
       <div className="App">
         <header className="App-header">
@@ -59,36 +72,34 @@ class App extends React.Component {
             }}
           >
             <Box sx={{ minWidth: 120 }} marginBottom={5}>
-              <EnhancedTable rows={this.props.itemList} updateRows={this.props.updateRows} />
+              <EnhancedTable rows={itemList} updateRows={this.props.updateRows} />
             </Box>
 
-            <Paper sx={{ minWidth: 120, p: 2, mb: 2, mt: 2 }}>
-            <FormControl fullWidth>
-              <Select
-                value={this.state.displayData}
-                onChange={(e) => {
-                  console.log(e.target.value);
-                  this.setState({ displayData: e.target.value });
-                }}
-              >
-                <MenuItem value={data0}>Analytic 1</MenuItem>
-                <MenuItem value={data1}>Analytic 2</MenuItem>
-                <MenuItem value={data2}>Analytic 3</MenuItem>
-              </Select>
-            </FormControl>
-          </Paper>
-          <Paper>
-            <LineChart
-              width={600}
-              height={300}
-              data={this.state.displayData}
-              margin={{ top: 20, right: 20, bottom: 5, left: 0 }}
+            <Paper 
+              sx={{ minWidth: 120, p: 2, mb: 2, mt: 2 }}
             >
-              <Line type="monotone" dataKey="uv" stroke="#FFC0CB" />
-              <CartesianGrid stroke="#ccc" />
-              <XAxis dataKey="name" />
-              <YAxis />
-            </LineChart>
+              <FormControl fullWidth>
+                <Select
+                  value={this.state.displayData}
+                  onChange={this.handleAnalyticSelect}
+                >
+                  <MenuItem value={'analytic1'}>Analytic 1</MenuItem>
+                  <MenuItem value={'analytic2'}>Analytic 2</MenuItem>
+                  <MenuItem value={'analytic3'}>Analytic 3</MenuItem>
+                </Select>
+              </FormControl>
+
+              <ResponsiveContainer width="100%" height={400}>
+                <LineChart
+                  data={data0}
+                  margin={{ top: 20, right: 20, bottom: 5, left: 0 }}
+                >
+                  <Line type="monotone" dataKey="uv" stroke="#FFC0CB" />
+                  <CartesianGrid stroke="#ccc" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                </LineChart>
+              </ResponsiveContainer>
           </Paper>
         </Paper>
       </div>

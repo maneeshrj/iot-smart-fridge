@@ -344,6 +344,15 @@ export default function EnhancedTable(props) {
     [selected],
   );
 
+  const addNewItem = (newItem) => {
+    // add new item to rows and update firebase
+    const updatedRows = [...rows, newItem];
+    props.updateRows(updatedRows);
+    setVisibleRows(updatedRows);
+
+    props.updateRows(updatedRows);
+  };
+
   const isSelected = (name) => selected.indexOf(name) !== -1;
 
   return (
@@ -431,7 +440,7 @@ export default function EnhancedTable(props) {
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
-      <AddItemForm />
+      <AddItemForm addItem={addNewItem} />
     </Box>
   );
 }

@@ -30,6 +30,12 @@ body {
   background-color: whitesmoke;
 }
 
+@media only screen and (max-width: 1000px) {
+  .App-body {
+    width: 80%;
+  }
+}
+
 @media only screen and (max-width: 600px) {
   .App-body {
     width: 100%;
