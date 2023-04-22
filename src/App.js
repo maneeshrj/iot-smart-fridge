@@ -43,7 +43,8 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
-      displayData: 'analytic1' 
+      displayData: 'analytic1',
+      itemList: this.props.userData.items==='empty' ? [] : this.props.userData.items,
     };
   }
 
@@ -56,8 +57,6 @@ class App extends React.Component {
   };
 
   render() {
-    var itemList = this.props.userData.items;
-    itemList = itemList==='empty' ? [] : itemList;
     return (
       <div className="App">
         <header className="App-header">
@@ -72,7 +71,7 @@ class App extends React.Component {
             }}
           >
             <Box sx={{ minWidth: 120 }} marginBottom={5}>
-              <EnhancedTable rows={itemList} updateRows={this.props.updateRows} />
+              <EnhancedTable rows={this.state.itemList} updateRows={this.props.updateRows} />
             </Box>
 
             <Paper 

@@ -38,7 +38,12 @@ const firebaseApp = initializeApp(firebaseConfig);
 const database = getDatabase(firebaseApp);
 var publicDataRef = ref(database, 'public');
 
+const email = 'teamaccessdenied22@gmail.com';
+const password = 'group9'; //prompt("Password");
 const auth = getAuth();
+
+var userData = null;
+var rerenderKey = 0;
 
 // Function that gets called when user submits login form
 function submitLogin(email, password) {
@@ -65,16 +70,17 @@ function submitLogin(email, password) {
       // set(ref(database, 'users/' + user.uid + '/items'), rows);
 
       onValue(userRef, function(snapshot) {
-        console.log(snapshot.val());
-        let userData = snapshot.val();
+        console.log('Got update from firebase:', snapshot.val());
+        userData = snapshot.val();
         
-        var saveUserData = ((data) => {
-          set(ref(database, 'users/' + user.uid), data);
-        });
+        // var saveUserData = ((data) => {
+        //   set(ref(database, 'users/' + user.uid), data);
+        // });
         
         // If signed in and user data changes, render app view
+        rerenderKey++;
         renderApp(userData, (rows) => {
-          updateRows(rows, ref(database, 'users/' + user.uid + '/items'));
+          updateRows(rows, 'users/' + user.uid);
         });
       }, function (errorObject) {
         console.log("Failed to read data: " + errorObject.code);
@@ -99,7 +105,7 @@ function submitLogin(email, password) {
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
-function updateRows(newRows, itemsRef) {
+function updateRows(newRows, userRefKey) {
   console.log("updateRows called");
   newRows = newRows.map((row) => ({
       name: row.name,
@@ -111,13 +117,30 @@ function updateRows(newRows, itemsRef) {
   if (newRows.length == 0) {
     newRows = 'empty';
   }
-  set(itemsRef, newRows);
+  set(ref(database, userRefKey+'/items'), newRows).then(() => {
+    console.log("Data saved successfully!");
+    // get(ref(database, userRefKey)).then((snapshot) => {
+    //   if (snapshot.exists()) {
+    //     console.log(snapshot.val());
+    //     // return snapshot.val();
+    //     renderApp(snapshot.val(), (rows) => {
+    //       updateRows(rows, userRefKey);
+    //     });
+    //   } else {
+    //     console.log("No data available");
+    //   }
+    // }).catch((error) => {
+    //   console.error(error);
+    // })
+  }).catch((error) => {
+    console.log("Data could not be saved: " + error);
+  });
 }
 
 function renderApp(userData, updateRows) {
   root.render(
     <React.StrictMode>
-      <App userData={userData} updateRows={updateRows} />
+      <App userData={userData} updateRows={updateRows} key={rerenderKey} />
     </React.StrictMode>
   );
 }
@@ -131,8 +154,8 @@ function renderLogin(submitLogin) {
 }
 
 
-renderLogin(submitLogin);
-// submitLogin(email, password);
+// renderLogin(submitLogin);
+submitLogin(email, password);
 // renderApp();
 
 // If you want to start measuring performance in your app, pass a function
