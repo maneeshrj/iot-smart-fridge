@@ -154,7 +154,7 @@ function renderLogin(submitLogin) {
 }
 
 
-// renderLogin(submitLogin);
+//renderLogin(submitLogin);
 submitLogin(email, password);
 // renderApp();
 

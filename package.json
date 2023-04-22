@@ -2,6 +2,8 @@
   "name": "iot-smart-fridge",
   "version": "0.1.0",
   "private": true,
+  "main": "index.js",
+  "homepage": "./",
   "dependencies": {
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
@@ -14,6 +16,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "dayjs": "^1.11.7",
+    "electron": "^24.1.2",
     "firebase": "^9.19.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -25,7 +28,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "electron": "electron ."
   },
   "eslintConfig": {
     "extends": [
