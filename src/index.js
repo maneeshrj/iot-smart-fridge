@@ -38,8 +38,8 @@ const firebaseApp = initializeApp(firebaseConfig);
 const database = getDatabase(firebaseApp);
 var publicDataRef = ref(database, 'public');
 
-const email = 'teamaccessdenied22@gmail.com';
-const password = 'group9'; //prompt("Password");
+//const email = 'teamaccessdenied22@gmail.com';
+//const password = 'group9'; //prompt("Password");
 const auth = getAuth();
 
 var userData = null;
@@ -154,8 +154,8 @@ function renderLogin(submitLogin) {
 }
 
 
-// renderLogin(submitLogin);
-submitLogin(email, password);
+renderLogin(submitLogin);
+// submitLogin(email, password);
 // renderApp();
 
 // If you want to start measuring performance in your app, pass a function
