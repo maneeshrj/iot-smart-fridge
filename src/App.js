@@ -9,34 +9,15 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
 import EnhancedTable from './EnhancedTable';
 import Paper from '@mui/material/Paper';
-import { LineChart, Line, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { BarChart, Legend, Bar, LineChart, Line, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
 // THIS IS DEMO DATA 
 const data0 = [
-  { name: "Page A", uv: 800, pv: 2400, amt: 2400 },
-  { name: "Page B", uv: 100, pv: 4567, amt: 2400 },
-  { name: "Page C", uv: 200, pv: 1398, amt: 2400 },
-  { name: "Page D", uv: 500, pv: 9800, amt: 2400 },
-  { name: "Page E", uv: 678, pv: 3908, amt: 2400 },
-  { name: "Page F", uv: 289, pv: 4800, amt: 2400 },
-];
-
-const data1 = [
-  { name: "Page B", uv: 100, pv: 2400, amt: 2400 },
-  { name: "Page B", uv: 200, pv: 4567, amt: 2400 },
-  { name: "Page C", uv: 300, pv: 1398, amt: 2400 },
-  { name: "Page D", uv: 400, pv: 9800, amt: 2400 },
-  { name: "Page E", uv: 580, pv: 3908, amt: 2400 },
-  { name: "Page F", uv: 689, pv: 4800, amt: 2400 },
-];
-
-const data2 = [
-  { name: "Page D", uv: 400, pv: 2400, amt: 2400 },
-  { name: "Page B", uv: 300, pv: 4567, amt: 2400 },
-  { name: "Page C", uv: 300, pv: 1398, amt: 2400 },
-  { name: "Page D", uv: 200, pv: 9800, amt: 2400 },
-  { name: "Page E", uv: 278, pv: 3908, amt: 2400 },
-  { name: "Page F", uv: 189, pv: 4800, amt: 2400 },
+  { name: "Apple", count: 10},
+  { name: "Banana", count: 5},
+  { name: "Cantalope", count: 2},
+  { name: "Dragonfruit", count: 8},
+  { name: "Eggs", count: 12},
 ];
 
 class App extends React.Component {
@@ -75,7 +56,16 @@ class App extends React.Component {
             </Box>
 
             <Paper 
-              sx={{ minWidth: 120, p: 2, mb: 2, mt: 2 }}
+              sx={{ 
+                minWidth: 120, 
+                p: 2, 
+                mb: 2, 
+                mt: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
             >
               <FormControl fullWidth>
                 <Select
@@ -88,16 +78,19 @@ class App extends React.Component {
                 </Select>
               </FormControl>
 
-              <ResponsiveContainer width="100%" height={400}>
-                <LineChart
+              <ResponsiveContainer width="80%" height={400}>
+                <BarChart
+                  layout="vertical"
                   data={data0}
                   margin={{ top: 20, right: 20, bottom: 5, left: 0 }}
                 >
-                  <Line type="monotone" dataKey="uv" stroke="#FFC0CB" />
+                  {/* <Line type="monotone" dataKey="uv" stroke="#FFC0CB" /> */}
                   <CartesianGrid stroke="#ccc" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                </LineChart>
+                  <XAxis type="number" tickCount={10}/>
+                  <YAxis dataKey="name" type="category"/>
+                  <Legend formatter={(value, entry, index) => {return value.charAt(0).toUpperCase() + value.slice(1)}}/>
+                  <Bar dataKey="count" fill="#82ca9d" />
+                </BarChart>
               </ResponsiveContainer>
           </Paper>
         </Paper>
