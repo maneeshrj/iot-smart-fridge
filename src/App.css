@@ -45,15 +45,26 @@ body {
   }
 }
 
-@keyframes App-logo-spin {
+.recharts-surface {
+  overflow: visible;
+}
+
+.loading-icon {
+  height: 10vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .loading-icon {
+      animation: loading-spin infinite 5s linear;
+  }
+}
+
+@keyframes loading-spin {
   from {
     transform: rotate(0deg);
   }
   to {
     transform: rotate(360deg);
   }
-}
-
-.recharts-surface {
-  overflow: visible;
 }

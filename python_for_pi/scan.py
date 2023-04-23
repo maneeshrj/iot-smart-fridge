@@ -70,6 +70,7 @@ def run(
     seen, windows, dt = 0, [], (Profile(), Profile(), Profile())
 
     idx = 0
+    final_label = ""
     for path, im, im0s, vid_cap, s in dataset:
         with dt[0]:
             im = torch.from_numpy(im).to(model.device)
@@ -108,6 +109,7 @@ def run(
                 for c in det[:, 5].unique():
                     n = (det[:, 5] == c).sum()  # detections per class
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
+                    final_label = str(names[int(c)])
 
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
@@ -131,10 +133,18 @@ def run(
         idx += 1
 
         if idx > 4 and len(det):
-            cv2.destroyWindow(str(p))
-            dataset.threads[0].join(1)
-            dataset.cap.release()
-            return names[0]
+            dataset.done = True
+            #break
+            #cv2.destroyWindow(str(p))
+            #dataset.threads[0].join(1)
+            #dataset.cap.release()
+            #return names[0]
+
+    #dataset.cap.release()
+    #cv2.destroyAllWindows()
+    dataset = None
+    return final_label
+
 
     # Print results
     # t = tuple(x.t / seen * 1E3 for x in dt)  # speeds per image

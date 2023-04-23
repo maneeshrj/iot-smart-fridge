@@ -40,6 +40,13 @@ class LoginView extends React.Component {
       this.props.submitLogin(this.state.username, this.state.password);
     }
 
+    
+    handleKeyDown = (event) => {
+      if (event.key === 'Enter') {
+        this.submitLogin();
+      }
+    }
+
     render() {
       return (
         <Box 
@@ -64,7 +71,10 @@ class LoginView extends React.Component {
                 <Paper 
                   sx={{ minWidth: 120, p: 2 }}
                 >
-                  <FormControl fullWidth>
+                  <FormControl 
+                    fullWidth
+                    onKeyDown={this.handleKeyDown}
+                  >
                     <Stack 
                       spacing={2} 
                       direction="column"
