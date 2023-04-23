@@ -30,6 +30,7 @@ import dayjs from 'dayjs';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import AddIcon from '@mui/icons-material/Add';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export default function AddItemForm(props) {
     const [date, setDate] = React.useState(dayjs());
@@ -61,6 +62,13 @@ export default function AddItemForm(props) {
         setCost(0);
         setItemName('');
         setDate(dayjs());
+    };
+
+    const toggleShow = (newShow) => {
+        setCost(0);
+        setItemName('');
+        setDate(dayjs());
+        setShow(newShow);
     };
     
     return show ? (
@@ -104,7 +112,24 @@ export default function AddItemForm(props) {
                         onChange={handleCostChange}
                     />
                 </Grid>
-                <Grid item md={12}>
+                
+                <Grid item md={2}>
+                    <Button
+                        aria-label="add"
+                        onClick={() => toggleShow(false)}
+                        variant="outlined"
+                        sx={{
+                            alignSelf: 'center',
+                            justifySelf: 'center',
+                            height: '100%',
+                            width: '100%'
+                        }}
+                        color="error"
+                    >
+                        <ArrowBackIcon />
+                    </Button>
+                </Grid>
+                <Grid item md={10}>
                     <Button
                         aria-label="add"
                         onClick={() => handleSubmit()}
@@ -133,10 +158,7 @@ export default function AddItemForm(props) {
         >
             <Button
                 aria-label="add"
-                onClick={() => { 
-                    setShow(true);
-                    setErr('none');
-                }}
+                onClick={() => toggleShow(true)}
                 variant="outlined"
                 sx={{
                     alignSelf: 'center',

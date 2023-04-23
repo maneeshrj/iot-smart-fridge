@@ -114,7 +114,7 @@ function updateRows(newRows, userRefKey) {
       cost: parseFloat(row.cost),
   }));
   console.log(newRows);
-  if (newRows.length == 0) {
+  if (newRows.length === 0) {
     newRows = 'empty';
   }
   set(ref(database, userRefKey+'/items'), newRows).then(() => {
