@@ -18,6 +18,7 @@ import Tooltip from '@mui/material/Tooltip';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { visuallyHidden } from '@mui/utils';
 import AddItemForm from './AddItemForm';
+import dayjs from 'dayjs';
 
 Date.prototype.addDays = function(days) {
   var date = new Date(this.valueOf());
@@ -185,7 +186,7 @@ function EnhancedTableToolbar(props) {
       )}
 
       {numSelected > 0 ? (
-        <Tooltip title="Delete">
+        <Tooltip title="Remove">
           <IconButton onClick={props.delete}>
             <DeleteIcon />
           </IconButton>
@@ -223,12 +224,9 @@ class EnhancedTable extends React.Component {
     };
   }
 
-  componentDidMount() {
+  loadRows = () => {
     let rowData = [];
-    // console.log('this.props.userData', this.props.userData);
-    // if(this.props.userData !== null && this.props.userData !== undefined) {
     if(this.props.rows && this.props.rows !== 'empty') {
-      // rowData = this.props.userData.items;
       rowData = this.props.rows.map((row) => {
         return {
           ...row,
@@ -238,47 +236,19 @@ class EnhancedTable extends React.Component {
       });
       // console.log('rowData', rowData);
     }
-    // }
     this.setState((prevState) => ({
       ...prevState,
       rows: rowData,
-    }));
+    })); 
+  }
+
+  componentDidMount() {
+    this.loadRows();
   }
 
   componentDidUpdate(prevProps) {
-    // if(this.props.userData !== prevProps.userData) {
-    //   let rowData = [];
-    //   // console.log('this.props.userData', this.props.userData);
-    //   if(this.props.userData !== null && this.props.userData !== undefined) {
-    //     if(this.props.userData.items !== 'empty') {
-    //       rowData = this.props.userData.items;
-    //       // console.log('rowData', rowData);
-    //     }
-    //   }
-    //   this.setState((prevState) => ({
-    //     ...prevState,
-    //     rows: rowData,
-    //   }));   
-    // } 
-
-    if(this.props.rows && this.props.rows !== prevProps.rows) {
-      let rowData = [];
-      // console.log('this.props.userData', this.props.userData);
-      if(this.props.rows && this.props.rows !== 'empty') {
-        // rowData = this.props.userData.items;
-        rowData = this.props.rows.map((row) => {
-          return {
-            ...row,
-            days_left: Math.ceil((new Date(row.expiry_date) - new Date()) / (1000 * 60 * 60 * 24)),
-            cost: row.cost.toFixed(2),
-          }
-        });
-        // console.log('rowData', rowData);
-      }
-      this.setState((prevState) => ({
-        ...prevState,
-        rows: rowData,
-      }));   
+    if(this.props.rows && this.props.rows !== prevProps.rows) {    
+      this.loadRows();  
     } 
   }
 
@@ -391,7 +361,8 @@ class EnhancedTable extends React.Component {
                           selected={isItemSelected}
                           sx={{ cursor: 'pointer' }}
                           // if expiry date has passed, highlight row
-                          style={new Date(row.expiry_date) < new Date() ? { backgroundColor: '#ffcccc' } : null}
+                          // style={new Date(row.expiry_date) < new Date() ? { backgroundColor: '#ffcccc' } : null}
+                          style={dayjs(row.expiry_date).isBefore(dayjs().format('YYYY/MM/DD')) ? { backgroundColor: '#ffcccc' } : null}
                         >
                           <TableCell padding="checkbox">
                             <Checkbox
@@ -424,8 +395,8 @@ class EnhancedTable extends React.Component {
               </TableBody>
             </Table>
           </TableContainer>
+          <AddItemForm addItem={this.props.addRow} />
         </Paper>
-        <AddItemForm addItem={this.props.addRow} />
       </Box>
     );
   }

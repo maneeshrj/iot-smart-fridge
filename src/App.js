@@ -16,14 +16,14 @@ import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { getDatabase, ref, onValue, child, set, update, get } from "firebase/database";
 import { Typography } from '@mui/material';
 
-// THIS IS DEMO DATA 
-const data0 = [
-  { name: "Apple", count: 10},
-  { name: "Banana", count: 5},
-  { name: "Cantalope", count: 2},
-  { name: "Dragonfruit", count: 8},
-  { name: "Eggs", count: 12},
-];
+// THIS IS DEMO ANALYTICS DATA 
+// const data0 = [
+//   { name: "Apple", count: 10},
+//   { name: "Banana", count: 5},
+//   { name: "Cantalope", count: 2},
+//   { name: "Dragonfruit", count: 8},
+//   { name: "Eggs", count: 12},
+// ];
 
 
 class App extends React.Component {
@@ -32,7 +32,8 @@ class App extends React.Component {
     this.state = { 
       analytic: 'analytic1',
       rows: null,
-      analyticData: data0,
+      analyticData: [],
+      loadingAnalytic: true,
     };
   }
 
@@ -51,6 +52,8 @@ class App extends React.Component {
         console.log("Failed to read update from firebase: " + errorObject.code);
       }
     );
+
+    this.loadAnalytic(this.state.analytic);
   }
 
   updateRows = (updatedRows) => {
@@ -84,7 +87,43 @@ class App extends React.Component {
     var updatedRows = this.state.rows === 'empty' ? [] : this.state.rows;
     console.log('updatedRows', updatedRows);
     updatedRows.push(newRow);
+
     this.updateRows(updatedRows);
+    
+    let newRowName = newRow.name;
+    get(child(this.props.userRef, 'analytic1')).then((snapshot) => {
+      if (snapshot.exists()) {
+        var analyticData = snapshot.val();
+        var found = false;
+        for (var i = 0; i < analyticData.length; i++) {
+          if (analyticData[i].name === newRowName) {
+            analyticData[i].count += 1;
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          analyticData.push({name: newRowName, count: 1});
+        }
+        console.log('Analytic updated:', snapshot.val());
+        set(child(this.props.userRef, 'analytic1'), analyticData).then(() => {
+          console.log("Analytic data saved successfully!");
+        }).catch((error) => {
+          console.log("Analytic data could not be saved: " + error);
+        });
+
+        if(this.state.analytic === 'analytic1') {
+          this.setState((prevState) => ({
+            ...prevState,
+            analyticData: analyticData,
+          }));
+        }
+      } else {
+        console.log("No analytic data available");
+      }
+    }).catch((error) => {
+      console.log('Error loading analytic: '+error);
+    });
   }
 
   deleteRows = (ids) => {
@@ -94,14 +133,18 @@ class App extends React.Component {
   }
 
   handleAnalyticSelect = (event) => {
-    console.log(event.target.value);
+    this.loadAnalytic(event.target.value);
+  }
+
+  loadAnalytic = (analyticName) => {
+    console.log(analyticName);
     this.setState((prevState) => ({ 
       ...prevState,
-      analytic: event.target.value,
+      analytic: analyticName,
       loadingAnalytic: true,
     }));
 
-    get(child(this.props.userRef, event.target.value)).then((snapshot) => {
+    get(child(this.props.userRef, analyticName)).then((snapshot) => {
       if (snapshot.exists()) {
         console.log('Analytic loaded:', snapshot.val());
         this.setState((prevState) => ({
@@ -131,9 +174,8 @@ class App extends React.Component {
               bgcolor: 'linen',
             }}
           >
-            <Box sx={{ minWidth: 120 }} marginBottom={5}>
+            <Box sx={{ minWidth: 120 }} mb={3}>
               <EnhancedTable 
-                // rows={ (this.state.userData !== null && this.state.userData.items !== 'empty'? this.state.userData.items : []) } 
                 rows={this.state.rows}
                 addRow={this.addRow} 
                 deleteRows={this.deleteRows}
@@ -144,9 +186,7 @@ class App extends React.Component {
             <Paper 
               sx={{ 
                 minWidth: 120, 
-                p: 2, 
-                mb: 2, 
-                mt: 2,
+                p: 2,
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
@@ -165,18 +205,22 @@ class App extends React.Component {
               </FormControl>
 
               <ResponsiveContainer width="80%" height={80*this.state.analyticData.length}>
-                <BarChart
-                  layout="vertical"
-                  data={this.state.analyticData}
-                  margin={{ top: 20, right: 20, bottom: 5, left: 0 }}
-                >
-                  <CartesianGrid stroke="#ccc" />
-                  <XAxis type="number" tickCount={10}/>
-                  <YAxis dataKey="name" type="category"/>
-                  <Legend formatter={(value, entry, index) => {return value.charAt(0).toUpperCase() + value.slice(1)}}/>
-                  <Bar dataKey="count" fill="#82ca9d" />
-                  <Tooltip />
-                </BarChart>
+                { this.state.loadingAnalytic ?
+                  <Typography variant='h6' mb={1} >Loading...</Typography>
+                  :
+                  <BarChart
+                    layout="vertical"
+                    data={this.state.analyticData}
+                    margin={{ top: 20, right: 20, bottom: 5, left: 0 }}
+                  >
+                    <CartesianGrid stroke="#ccc" />
+                    <XAxis type="number" tickCount={10}/>
+                    <YAxis dataKey="name" type="category"/>
+                    <Legend formatter={(value, entry, index) => {return value.charAt(0).toUpperCase() + value.slice(1)}}/>
+                    <Bar dataKey="count" fill="#82ca9d" />
+                    <Tooltip />
+                  </BarChart>
+                }
               </ResponsiveContainer>
           </Paper>
         </Paper>
