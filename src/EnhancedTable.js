@@ -7,7 +7,6 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Toolbar from '@mui/material/Toolbar';
@@ -93,7 +92,6 @@ const headCells = [
 
 const DEFAULT_ORDER = 'asc';
 const DEFAULT_ORDER_BY = 'days_left';
-const DEFAULT_ROWS_PER_PAGE = 10;
 
 function EnhancedTableHead(props) {
   const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } =
@@ -213,234 +211,224 @@ EnhancedTableToolbar.propTypes = {
   delete: PropTypes.func.isRequired,
 };
 
-export default function EnhancedTable(props) {
-  const [order, setOrder] = React.useState(DEFAULT_ORDER);
-  const [orderBy, setOrderBy] = React.useState(DEFAULT_ORDER_BY);
-  const [selected, setSelected] = React.useState([]);
-  const [page, setPage] = React.useState(0);
-  const [visibleRows, setVisibleRows] = React.useState(null);
-  const [rowsPerPage, setRowsPerPage] = React.useState(DEFAULT_ROWS_PER_PAGE);
-  const [paddingHeight, setPaddingHeight] = React.useState(0);
 
-  var rows = props.rows.map((row) => ({
-    ...row,
-    days_left: Math.ceil((new Date(row.expiry_date) - new Date()) / (1000 * 60 * 60 * 24)),
-    cost: row.cost.toFixed(2),
-  }));
-  
-  React.useEffect(() => {
-    let rowsOnMount = stableSort(
-      rows,
-      getComparator(DEFAULT_ORDER, DEFAULT_ORDER_BY),
-    );
+class EnhancedTable extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      order: 'asc',
+      orderBy: 'expiry_date',
+      selected: [],
+      rows: [],
+    };
+  }
 
-    rowsOnMount = rowsOnMount.slice(
-      0 * DEFAULT_ROWS_PER_PAGE,
-      0 * DEFAULT_ROWS_PER_PAGE + DEFAULT_ROWS_PER_PAGE,
-    );
+  componentDidMount() {
+    let rowData = [];
+    // console.log('this.props.userData', this.props.userData);
+    // if(this.props.userData !== null && this.props.userData !== undefined) {
+    if(this.props.rows && this.props.rows !== 'empty') {
+      // rowData = this.props.userData.items;
+      rowData = this.props.rows.map((row) => {
+        return {
+          ...row,
+          days_left: Math.ceil((new Date(row.expiry_date) - new Date()) / (1000 * 60 * 60 * 24)),
+          cost: row.cost.toFixed(2),
+        }
+      });
+      // console.log('rowData', rowData);
+    }
+    // }
+    this.setState((prevState) => ({
+      ...prevState,
+      rows: rowData,
+    }));
+  }
 
-    setVisibleRows(rowsOnMount);
-  }, []);
+  componentDidUpdate(prevProps) {
+    // if(this.props.userData !== prevProps.userData) {
+    //   let rowData = [];
+    //   // console.log('this.props.userData', this.props.userData);
+    //   if(this.props.userData !== null && this.props.userData !== undefined) {
+    //     if(this.props.userData.items !== 'empty') {
+    //       rowData = this.props.userData.items;
+    //       // console.log('rowData', rowData);
+    //     }
+    //   }
+    //   this.setState((prevState) => ({
+    //     ...prevState,
+    //     rows: rowData,
+    //   }));   
+    // } 
 
-  const handleRequestSort = React.useCallback(
-    (event, newOrderBy) => {
-      const isAsc = orderBy === newOrderBy && order === 'asc';
-      const toggledOrder = isAsc ? 'desc' : 'asc';
-      setOrder(toggledOrder);
-      setOrderBy(newOrderBy);
+    if(this.props.rows && this.props.rows !== prevProps.rows) {
+      let rowData = [];
+      // console.log('this.props.userData', this.props.userData);
+      if(this.props.rows && this.props.rows !== 'empty') {
+        // rowData = this.props.userData.items;
+        rowData = this.props.rows.map((row) => {
+          return {
+            ...row,
+            days_left: Math.ceil((new Date(row.expiry_date) - new Date()) / (1000 * 60 * 60 * 24)),
+            cost: row.cost.toFixed(2),
+          }
+        });
+        // console.log('rowData', rowData);
+      }
+      this.setState((prevState) => ({
+        ...prevState,
+        rows: rowData,
+      }));   
+    } 
+  }
 
-      const sortedRows = stableSort(rows, getComparator(toggledOrder, newOrderBy));
-      const updatedRows = sortedRows.slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage,
-      );
+  handleRequestSort = (event, property) => {
+    const isAsc = this.state.orderBy === property && this.state.order === 'asc';
+    this.setState((prevState) => ({
+      ...prevState,
+      order: isAsc ? 'desc' : 'asc',
+      orderBy: property,
+      selected: [],
+    }));
+  }
 
-      setVisibleRows(updatedRows);
-    },
-    [order, orderBy, page, rowsPerPage],
-  );
-
-  const handleSelectAllClick = (event) => {
+  handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelected = rows.map((n) => n.name);
-      setSelected(newSelected);
+      const newSelecteds = this.state.rows.map((n) => n.id);
+      this.setState((prevState) => ({
+        ...prevState,
+        selected: newSelecteds,
+      }));
       return;
     }
-    setSelected([]);
-  };
+    this.setState((prevState) => ({
+      ...prevState,
+      selected: [],
+    }));
+  }
 
-  const handleClick = (event, name) => {
-    const selectedIndex = selected.indexOf(name);
+  handleClick = (event, id) => {
+    const selectedIndex = this.state.selected.indexOf(id);
     let newSelected = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(this.state.selected, id);
+    }
+    else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(this.state.selected.slice(1));
+    }
+    else if (selectedIndex === this.state.selected.length - 1) {
+      newSelected = newSelected.concat(this.state.selected.slice(0, -1));
+    }
+    else if (selectedIndex > 0) {
       newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1),
+        this.state.selected.slice(0, selectedIndex),
+        this.state.selected.slice(selectedIndex + 1),
       );
     }
+    this.setState((prevState) => ({
+      ...prevState,
+      selected: newSelected,
+    }));
+  }
 
-    setSelected(newSelected);
-  };
+  isSelected = (id) => this.state.selected.indexOf(id) !== -1;
 
-  const handleChangePage = React.useCallback(
-    (event, newPage) => {
-      setPage(newPage);
+  deleteSelected = () => {
+    // const updatedRows = this.state.rows.filter((row) => !this.state.selected.includes(row.id));
+    // this.setState((prevState) => ({
+    //   ...prevState,
+    //   rows: updatedRows,
+    //   selected: [],
+    // }));
+    // this.props.updateRows(updatedRows);
+    this.props.deleteRows(this.state.selected);
+    this.setState((prevState) => ({
+      ...prevState,
+      selected: [],
+    }));
+  }
 
-      const sortedRows = stableSort(rows, getComparator(order, orderBy));
-      const updatedRows = sortedRows.slice(
-        newPage * rowsPerPage,
-        newPage * rowsPerPage + rowsPerPage,
+  render() {
+    let sortedRows = []
+    if (this.state.rows && this.state.rows !== 'empty') {
+      sortedRows = stableSort(
+        this.state.rows,
+        getComparator(this.state.order, this.state.orderBy),
       );
-
-      setVisibleRows(updatedRows);
-
-      // Avoid a layout jump when reaching the last page with empty rows.
-      const numEmptyRows =
-        newPage > 0 ? Math.max(0, (1 + newPage) * rowsPerPage - rows.length) : 0;
-
-      const newPaddingHeight = 33 * numEmptyRows;
-      setPaddingHeight(newPaddingHeight);
-    },
-    [order, orderBy, rowsPerPage],
-  );
-
-  const handleChangeRowsPerPage = React.useCallback(
-    (event) => {
-      const updatedRowsPerPage = parseInt(event.target.value, 10);
-      setRowsPerPage(updatedRowsPerPage);
-
-      setPage(0);
-
-      const sortedRows = stableSort(rows, getComparator(order, orderBy));
-      const updatedRows = sortedRows.slice(
-        0 * updatedRowsPerPage,
-        0 * updatedRowsPerPage + updatedRowsPerPage,
-      );
-
-      setVisibleRows(updatedRows);
-
-      // There is no layout jump to handle on the first page.
-      setPaddingHeight(0);
-    },
-    [order, orderBy],
-  );
-
-  const deleteSelected = React.useCallback(
-    (event) => {
-      // remove selected rows from rows and update firebase
-      const updatedRows = rows.filter((row) => !selected.includes(row.name));
-      props.updateRows(updatedRows);
-      setVisibleRows(updatedRows);
-      // clear selected rows
-      setSelected([]);
-    }, 
-    [selected],
-  );
-
-  const addNewItem = (newItem) => {
-    // add new item to rows and update firebase
-    const updatedRows = [...rows, newItem];
-    props.updateRows(updatedRows);
-    setVisibleRows(updatedRows);
-
-    props.updateRows(updatedRows);
-  };
-
-  const isSelected = (name) => selected.indexOf(name) !== -1;
-
-  return (
-    <Box sx={{ width: '100%' }}>
-      <Paper sx={{ width: '100%', mb: 2 }}>
-        <EnhancedTableToolbar numSelected={selected.length} delete={deleteSelected} />
-        <TableContainer>
-          <Table
-            sx={{ minWidth: 750 }}
-            aria-labelledby="tableTitle"
-            size={'small'}
-          >
-            <EnhancedTableHead
-              numSelected={selected.length}
-              order={order}
-              orderBy={orderBy}
-              onSelectAllClick={handleSelectAllClick}
-              onRequestSort={handleRequestSort}
-              rowCount={rows.length}
-            />
-            <TableBody>
-              {visibleRows
-                ? visibleRows.map((row, index) => {
-                    const isItemSelected = isSelected(row.name);
-                    const labelId = `enhanced-table-checkbox-${index}`;
-
-                    return (
-                      <TableRow
-                        hover
-                        onClick={(event) => handleClick(event, row.name)}
-                        role="checkbox"
-                        aria-checked={isItemSelected}
-                        tabIndex={-1}
-                        key={row.name}
-                        selected={isItemSelected}
-                        sx={{ cursor: 'pointer' }}
-                        // if expiry date has passed, highlight row
-                        style={new Date(row.expiry_date) < new Date() ? { backgroundColor: '#ffcccc' } : null}
-                      >
-                        <TableCell padding="checkbox">
-                          <Checkbox
-                            color="primary"
-                            checked={isItemSelected}
-                            inputProps={{
-                              'aria-labelledby': labelId,
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell
-                          component="th"
-                          id={labelId}
-                          scope="row"
-                          padding="none"
+    }
+    return (
+      <Box sx={{ width: '100%' }}>
+        <Paper sx={{ width: '100%', mb: 2 }}>
+          <EnhancedTableToolbar numSelected={this.state.selected.length} delete={this.deleteSelected} />
+          <TableContainer>
+            <Table
+              sx={{ minWidth: 750 }}
+              aria-labelledby="tableTitle"
+              size={'small'}
+            >
+              <EnhancedTableHead
+                numSelected={this.state.selected.length}
+                order={this.state.order}
+                orderBy={this.state.orderBy}
+                onSelectAllClick={this.handleSelectAllClick}
+                onRequestSort={this.handleRequestSort}
+                rowCount={sortedRows.length}
+              />
+              <TableBody>
+                {sortedRows ? sortedRows.map((row, index) => {
+                      const isItemSelected = this.isSelected(row.id);
+                      const labelId = `enhanced-table-checkbox-${index}`;
+  
+                      return (
+                        <TableRow
+                          hover
+                          onClick={(event) => this.handleClick(event, row.id)}
+                          role="checkbox"
+                          aria-checked={isItemSelected}
+                          tabIndex={-1}
+                          key={row.id}
+                          selected={isItemSelected}
+                          sx={{ cursor: 'pointer' }}
+                          // if expiry date has passed, highlight row
+                          style={new Date(row.expiry_date) < new Date() ? { backgroundColor: '#ffcccc' } : null}
                         >
-                          {row.name}
-                        </TableCell>
-                        <TableCell align="right">{row.days_left}</TableCell>
-                        <TableCell align="right">{row.date_added}</TableCell>
-                        <TableCell align="right">{row.expiry_date}</TableCell>
-                        <TableCell align="right">{row.cost}</TableCell>
-                      </TableRow>
-                    );
-                  })
-                : null}
-              {paddingHeight > 0 && (
-                <TableRow
-                  style={{
-                    height: paddingHeight,
-                  }}
-                >
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          className='Table-footer'
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Paper>
-      <AddItemForm addItem={addNewItem} />
-    </Box>
-  );
+                          <TableCell padding="checkbox">
+                            <Checkbox
+                              color="primary"
+                              checked={isItemSelected}
+                              inputProps={{
+                                'aria-labelledby': labelId,
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell
+                            component="th"
+                            id={labelId}
+                            scope="row"
+                            padding="none"
+                          >
+                            {row.name}
+                          </TableCell>
+                          <TableCell align="right">{row.days_left}</TableCell>
+                          <TableCell align="right">{row.date_added}</TableCell>
+                          <TableCell align="right">{row.expiry_date}</TableCell>
+                          <TableCell align="right">{row.cost}</TableCell>
+                        </TableRow>
+                      );
+                    })
+                  : null}
+                  <TableRow>
+                    <TableCell colSpan={6} />
+                  </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+        <AddItemForm addItem={this.props.addRow} />
+      </Box>
+    );
+  }
 }
+
+export default EnhancedTable;

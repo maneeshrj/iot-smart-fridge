@@ -9,7 +9,12 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { DataGrid, GridRowsProp, GridColDef } from '@mui/x-data-grid';
 import EnhancedTable from './EnhancedTable';
 import Paper from '@mui/material/Paper';
-import { BarChart, Legend, Bar, LineChart, Line, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { BarChart, Legend, Bar, Tooltip, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts";
+
+import { initializeApp } from "firebase/app";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { getDatabase, ref, onValue, child, set, update, get } from "firebase/database";
+import { Typography } from '@mui/material';
 
 // THIS IS DEMO DATA 
 const data0 = [
@@ -20,21 +25,96 @@ const data0 = [
   { name: "Eggs", count: 12},
 ];
 
+
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
-      displayData: 'analytic1',
-      itemList: this.props.userData.items==='empty' ? [] : this.props.userData.items,
+      analytic: 'analytic1',
+      rows: null,
+      analyticData: data0,
     };
+  }
+
+  componentDidMount() {
+    const updateUserData = (snapshot) => {
+      const newUserData = snapshot.val();
+      console.log('Got update from firebase:', newUserData);
+      this.setState((prevState) => ({
+        ...prevState,
+        rows: newUserData
+      }));
+    }
+
+    onValue(child(this.props.userRef, '/items'), updateUserData, 
+      function (errorObject) {
+        console.log("Failed to read update from firebase: " + errorObject.code);
+      }
+    );
+  }
+
+  updateRows = (updatedRows) => {
+    if (updatedRows.length === 0) {
+      updatedRows = 'empty';
+    }
+    this.setState((prevState) => ({
+      ...prevState,
+      rows: updatedRows
+    }));
+
+    const updatedItems = updatedRows.map((row) => {
+      return {
+        id: row.id,
+        name: row.name,
+        date_added: row.date_added,
+        expiry_date: row.expiry_date,
+        cost: parseFloat(row.cost),
+      }
+    });
+
+    set(child(this.props.userRef, '/items'), updatedItems).then(() => {
+      console.log("Data saved successfully!");
+    }).catch((error) => {
+      console.log("Data could not be saved: " + error);
+    });
+  }
+
+  addRow = (newRow) => {
+    console.log("addRow called");
+    var updatedRows = this.state.rows === 'empty' ? [] : this.state.rows;
+    console.log('updatedRows', updatedRows);
+    updatedRows.push(newRow);
+    this.updateRows(updatedRows);
+  }
+
+  deleteRows = (ids) => {
+    console.log("deleteRow called");
+    const updatedRows = this.state.rows.filter((row) => !ids.includes(row.id));
+    this.updateRows(updatedRows);
   }
 
   handleAnalyticSelect = (event) => {
     console.log(event.target.value);
     this.setState((prevState) => ({ 
       ...prevState,
-      displayData: event.target.value 
+      analytic: event.target.value,
+      loadingAnalytic: true,
     }));
+
+    get(child(this.props.userRef, event.target.value)).then((snapshot) => {
+      if (snapshot.exists()) {
+        console.log('Analytic loaded:', snapshot.val());
+        this.setState((prevState) => ({
+          ...prevState,
+          analyticData: snapshot.val(),
+          loadingAnalytic: false,
+        }));
+      } else {
+        console.log("No analytic data available");
+      }
+    }).catch((error) => {
+      console.log('Error loading analytic: '+error);
+    });
   };
 
   render() {
@@ -52,7 +132,13 @@ class App extends React.Component {
             }}
           >
             <Box sx={{ minWidth: 120 }} marginBottom={5}>
-              <EnhancedTable rows={this.state.itemList} updateRows={this.props.updateRows} />
+              <EnhancedTable 
+                // rows={ (this.state.userData !== null && this.state.userData.items !== 'empty'? this.state.userData.items : []) } 
+                rows={this.state.rows}
+                addRow={this.addRow} 
+                deleteRows={this.deleteRows}
+                updateRows={this.updateRows}
+              />
             </Box>
 
             <Paper 
@@ -67,29 +153,29 @@ class App extends React.Component {
                 alignItems: 'center'
               }}
             >
+              <Typography variant='h6' mb={1} >Analytics</Typography>
               <FormControl fullWidth>
                 <Select
-                  value={this.state.displayData}
+                  value={this.state.analytic}
                   onChange={this.handleAnalyticSelect}
                 >
-                  <MenuItem value={'analytic1'}>Analytic 1</MenuItem>
-                  <MenuItem value={'analytic2'}>Analytic 2</MenuItem>
-                  <MenuItem value={'analytic3'}>Analytic 3</MenuItem>
+                  <MenuItem value={'analytic1'}>How often are items added?</MenuItem>
+                  <MenuItem value={'analytic2'}>How often do items expire?</MenuItem>
                 </Select>
               </FormControl>
 
-              <ResponsiveContainer width="80%" height={400}>
+              <ResponsiveContainer width="80%" height={80*this.state.analyticData.length}>
                 <BarChart
                   layout="vertical"
-                  data={data0}
+                  data={this.state.analyticData}
                   margin={{ top: 20, right: 20, bottom: 5, left: 0 }}
                 >
-                  {/* <Line type="monotone" dataKey="uv" stroke="#FFC0CB" /> */}
                   <CartesianGrid stroke="#ccc" />
                   <XAxis type="number" tickCount={10}/>
                   <YAxis dataKey="name" type="category"/>
                   <Legend formatter={(value, entry, index) => {return value.charAt(0).toUpperCase() + value.slice(1)}}/>
                   <Bar dataKey="count" fill="#82ca9d" />
+                  <Tooltip />
                 </BarChart>
               </ResponsiveContainer>
           </Paper>
@@ -99,26 +185,5 @@ class App extends React.Component {
     );
   }
 }
-
-// function App() {
-//   return (
-//     <div className="App">
-//       <header className="App-header">
-//         <img src={logo} className="App-logo" alt="logo" />
-//         <p>
-//           {testVal}
-//         </p>
-//         <a
-//           className="App-link"
-//           href="https://reactjs.org"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//         >
-//           Learn React
-//         </a>
-//       </header>
-//     </div>
-//   );
-// }
 
 export default App;

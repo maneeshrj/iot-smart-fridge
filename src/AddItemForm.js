@@ -1,27 +1,5 @@
 import * as React from 'react';
-import PropTypes from 'prop-types';
-import { alpha } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
-import DeleteIcon from '@mui/icons-material/Delete';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import { visuallyHidden } from '@mui/utils';
-import FormControl from '@mui/material/FormControl';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -31,145 +9,192 @@ import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CameraAltIcon from '@mui/icons-material/CameraAlt';
 
-export default function AddItemForm(props) {
-    const [date, setDate] = React.useState(dayjs());
-    const [itemName, setItemName] = React.useState('');
-    const [show, setShow] = React.useState(false);
-    const [cost, setCost] = React.useState(0);
-    const [err, setErr] = React.useState('none');
+class AddItemForm extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            date: dayjs(),
+            itemName: '',
+            show: false,
+            cost: 0,
+            err: 'none',
+        };
+    }
 
-    const handleCostChange = (event) => {
-        setCost(event.target.value.replace(/[^0-9.]/g,''));
+    handleNameChange = (event) => {
+        this.setState((prevState) => ({...prevState, itemName: event.target.value, err: (prevState.err==='name'? 'none' : prevState.err)}));
+    };
+
+    handleCostChange = (event) => {
+        this.setState((prevState) => ({...prevState, cost: event.target.value.replace(/[^0-9.]/g,'')}));
+    };
+
+    handleDateChange = (newDate) => {
+        this.setState((prevState) => ({...prevState, date: newDate}));
     };
     
-    const handleSubmit = () => {
-        if (itemName === '') {
-            setErr('name');
+    handleSubmit = () => {
+        if (this.state.itemName === '') {
+            this.setState((prevState) => ({...prevState, err: 'name'}));
             return;
         }
-        setErr('none');
-        setShow(false);
+
         const newItem = {
-            name: itemName,
+            name: this.state.itemName,
             date_added: dayjs().format('MM/DD/YYYY'),
-            expiry_date: date.format('MM/DD/YYYY'),
-            days_left: date.diff(dayjs(), 'day'),
-            cost: (cost === '') ? 0 : cost,
+            expiry_date: this.state.date.format('MM/DD/YYYY'),
+            days_left: this.state.date.diff(dayjs(), 'day'),
+            cost: (this.state.cost === '') ? 0 : this.state.cost,
+            id: Date.now(),
         }
+        
+        this.toggleShow(false);
+
         console.log(newItem);
-        props.addItem(newItem);
-        setCost(0);
-        setItemName('');
-        setDate(dayjs());
+        this.props.addItem(newItem);
     };
 
-    const toggleShow = (newShow) => {
-        setCost(0);
-        setItemName('');
-        setDate(dayjs());
-        setShow(newShow);
+    toggleShow = (newShow) => {
+        this.setState((prevState) => ({
+            ...prevState,
+            date: dayjs(),
+            itemName: '',
+            show: newShow,
+            cost: 0,
+            err: 'none',
+        }));
     };
+
+    handleKeyDown = (event) => {
+        if (event.key === 'Enter') {
+            this.handleSubmit();
+        }
+        else if (event.key === 'Escape') {
+            this.toggleShow(false);
+        }
+    }
     
-    return show ? (
-        <Paper
-            margin={2}
-            sx={{
-                p: 2,
-                display: 'flex',
-                flexDirection: 'column',
-            }}
-            className='AddItemForm'
-        >
-            <Grid container spacing={2}>
-                <Grid item md={5}>
-                    <TextField 
-                        label="Item Name" 
-                        variant="outlined" 
-                        error={err === 'name' ? true : false}
-                        fullWidth 
-                        onChange={(e) => {
-                            setItemName(e.target.value);
-                        }}
-                    />
-                </Grid>
-                <Grid item md={5}>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DatePicker
-                            label="Expiry Date"
-                            value={date}
-                            onChange={setDate}
-                            sx={{ width: '100%' }}
-                        />
-                    </LocalizationProvider>
-                </Grid>
-                <Grid item md={2}>
-                    <TextField
-                        label="Cost" 
-                        variant="outlined" 
-                        fullWidth 
-                        value={cost}
-                        onChange={handleCostChange}
-                    />
-                </Grid>
-                
-                <Grid item md={2}>
-                    <Button
-                        aria-label="add"
-                        onClick={() => toggleShow(false)}
-                        variant="outlined"
-                        sx={{
-                            alignSelf: 'center',
-                            justifySelf: 'center',
-                            height: '100%',
-                            width: '100%'
-                        }}
-                        color="error"
-                    >
-                        <ArrowBackIcon />
-                    </Button>
-                </Grid>
-                <Grid item md={10}>
-                    <Button
-                        aria-label="add"
-                        onClick={() => handleSubmit()}
-                        variant="outlined"
-                        sx={{
-                            alignSelf: 'center',
-                            justifySelf: 'center',
-                            height: '100%',
-                            width: '100%'
-                        }}
-                        color="warning"
-                    >
-                        <AddIcon />
-                    </Button>
-                </Grid>
-            </Grid>   
-        </Paper>
-    ) : (
-        <Paper
-            margin={2}
-            sx={{
-                p: 2,
-                display: 'flex',
-                flexDirection: 'column',
-            }}
-        >
-            <Button
-                aria-label="add"
-                onClick={() => toggleShow(true)}
-                variant="outlined"
+    render() {
+        // const { date, itemName, show, cost, err } = this.state;
+        return this.state.show ? (
+            <Paper
+                margin={2}
                 sx={{
-                    alignSelf: 'center',
-                    justifySelf: 'center',
-                    height: '100%',
-                    width: '100%'
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
                 }}
-                color="warning"
+                className='AddItemForm'
+                onKeyDown={this.handleKeyDown}
             >
-                Add Item
-            </Button>
-        </Paper>
-    );
+                <Grid container spacing={2}>
+                    <Grid item md={5} xs={12}>
+                        <TextField 
+                            label="Item Name" 
+                            variant="outlined" 
+                            error={this.state.err === 'name' ? true : false}
+                            fullWidth 
+                            onChange={this.handleNameChange}
+                        />
+                    </Grid>
+                    <Grid item md={5} xs={12}>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DatePicker
+                                label="Expiry Date"
+                                value={this.state.date}
+                                onChange={this.handleDateChange}
+                                sx={{ width: '100%' }}
+                            />
+                        </LocalizationProvider>
+                    </Grid>
+                    <Grid item md={2} xs={12}>
+                        <TextField
+                            label="Cost" 
+                            variant="outlined" 
+                            fullWidth 
+                            value={this.state.cost}
+                            onChange={this.handleCostChange}
+                        />
+                    </Grid>
+                    
+                    <Grid item md={2} xs={4}>
+                        <Button
+                            aria-label="add"
+                            onClick={() => this.toggleShow(false)}
+                            variant="outlined"
+                            sx={{
+                                alignSelf: 'center',
+                                justifySelf: 'center',
+                                height: '100%',
+                                width: '100%'
+                            }}
+                            color="error"
+                        >
+                            <ArrowBackIcon />
+                        </Button>
+                    </Grid>
+                    <Grid item md={2} xs={4}>
+                        <Button
+                            aria-label="add"
+                            onClick={() => this.toggleShow(false)}
+                            variant="outlined"
+                            sx={{
+                                alignSelf: 'center',
+                                justifySelf: 'center',
+                                height: '100%',
+                                width: '100%'
+                            }}
+                            color="info"
+                        >
+                            <CameraAltIcon />
+                        </Button>
+                    </Grid>
+                    <Grid item md={8} xs={4}>
+                        <Button
+                            aria-label="add"
+                            onClick={() => this.handleSubmit()}
+                            variant="outlined"
+                            sx={{
+                                alignSelf: 'center',
+                                justifySelf: 'center',
+                                height: '100%',
+                                width: '100%'
+                            }}
+                            color="warning"
+                        >
+                            <AddIcon />
+                        </Button>
+                    </Grid>
+                </Grid>   
+            </Paper>
+        ) : (
+            <Paper
+                margin={2}
+                sx={{
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}
+            >
+                <Button
+                    aria-label="add"
+                    onClick={() => this.toggleShow(true)}
+                    variant="outlined"
+                    sx={{
+                        alignSelf: 'center',
+                        justifySelf: 'center',
+                        height: '100%',
+                        width: '100%'
+                    }}
+                    color="warning"
+                >
+                    Add Item
+                </Button>
+            </Paper>
+        );
+    }
 }
+
+export default AddItemForm;

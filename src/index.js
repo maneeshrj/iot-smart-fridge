@@ -42,9 +42,6 @@ const email = 'teamaccessdenied22@gmail.com';
 const password = 'group9'; //prompt("Password");
 const auth = getAuth();
 
-var userData = null;
-var rerenderKey = 0;
-
 // Function that gets called when user submits login form
 function submitLogin(email, password) {
   signInWithEmailAndPassword(auth, email, password)
@@ -53,38 +50,9 @@ function submitLogin(email, password) {
       // Signed in 
       const user = userCredential.user;
       console.log(user.email);
-      // usertag = user.email.split("@")[0];
 
       var userRef = ref(database, 'users/' + user.uid);
-
-      // TEST DATA
-      // const rows = [
-      //   createData('Cupcake',     '3/22/2023',  '3/22/2023',  4.3),
-      //   createData('Donut',       '3/22/2023',  '3/28/2023',  4.9),
-      //   createData('Eclair',      '3/22/2023',  '4/11/2023',  6.0),
-      //   createData('Yogurt',      '3/22/2023',  '4/12/2023',  4.0),
-      //   createData('Gingerbread', '3/22/2023',  '4/22/2023',  3.9),
-      //   createData('Honeycomb',   '3/22/2023',  '4/24/2023',   6.5),
-      //   createData('Ice cream',   '3/22/2023',  '4/26/2023',   4.3),
-      // ];
-      // set(ref(database, 'users/' + user.uid + '/items'), rows);
-
-      onValue(userRef, function(snapshot) {
-        console.log('Got update from firebase:', snapshot.val());
-        userData = snapshot.val();
-        
-        // var saveUserData = ((data) => {
-        //   set(ref(database, 'users/' + user.uid), data);
-        // });
-        
-        // If signed in and user data changes, render app view
-        rerenderKey++;
-        renderApp(userData, (rows) => {
-          updateRows(rows, 'users/' + user.uid);
-        });
-      }, function (errorObject) {
-        console.log("Failed to read data: " + errorObject.code);
-      });
+      renderApp(userRef);
     }
   )
   .catch((error) => {
@@ -94,53 +62,12 @@ function submitLogin(email, password) {
   });
 }
 
-// Attach an asynchronous callback to read the data at our posts reference
-// onValue(test, function(snapshot) {
-//   console.log(snapshot.val());
-//   testVal = snapshot.val();
-//   renderApp(testVal.test_list);
-// }, function (errorObject) {
-//   console.log("The read failed: " + errorObject.code);
-// });
-
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
-function updateRows(newRows, userRefKey) {
-  console.log("updateRows called");
-  newRows = newRows.map((row) => ({
-      name: row.name,
-      date_added: row.date_added,
-      expiry_date: row.expiry_date,
-      cost: parseFloat(row.cost),
-  }));
-  console.log(newRows);
-  if (newRows.length === 0) {
-    newRows = 'empty';
-  }
-  set(ref(database, userRefKey+'/items'), newRows).then(() => {
-    console.log("Data saved successfully!");
-    // get(ref(database, userRefKey)).then((snapshot) => {
-    //   if (snapshot.exists()) {
-    //     console.log(snapshot.val());
-    //     // return snapshot.val();
-    //     renderApp(snapshot.val(), (rows) => {
-    //       updateRows(rows, userRefKey);
-    //     });
-    //   } else {
-    //     console.log("No data available");
-    //   }
-    // }).catch((error) => {
-    //   console.error(error);
-    // })
-  }).catch((error) => {
-    console.log("Data could not be saved: " + error);
-  });
-}
-
-function renderApp(userData, updateRows) {
+function renderApp(userRef) {
   root.render(
     <React.StrictMode>
-      <App userData={userData} updateRows={updateRows} key={rerenderKey} />
+      <App userRef={userRef} />
     </React.StrictMode>
   );
 }
@@ -152,7 +79,6 @@ function renderLogin(submitLogin) {
     </React.StrictMode>
   );
 }
-
 
 //renderLogin(submitLogin);
 submitLogin(email, password);
