@@ -10,6 +10,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 
 class AddItemForm extends React.Component {
     constructor(props) {
@@ -76,6 +77,11 @@ class AddItemForm extends React.Component {
         }
     }
     
+    startScan = () => {
+        console.log('start scan');
+        this.props.startScan();
+    }
+
     render() {
         // const { date, itemName, show, cost, err } = this.state;
         return this.state.show ? (
@@ -138,7 +144,7 @@ class AddItemForm extends React.Component {
                     <Grid item md={2} xs={4}>
                         <Button
                             aria-label="add"
-                            onClick={() => this.toggleShow(false)}
+                            onClick={() => this.startScan()}
                             variant="outlined"
                             sx={{
                                 alignSelf: 'center',

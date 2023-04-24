@@ -30,7 +30,7 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = { 
-      analytic: 'analytic1',
+      analytic: 'added_count',
       rows: null,
       analyticData: [],
       loadingAnalytic: true,
@@ -91,9 +91,12 @@ class App extends React.Component {
     this.updateRows(updatedRows);
     
     let newRowName = newRow.name;
-    get(child(this.props.userRef, 'analytic1')).then((snapshot) => {
+    get(child(this.props.userRef, 'added_count')).then((snapshot) => {
       if (snapshot.exists()) {
         var analyticData = snapshot.val();
+        if (analyticData === 'empty') {
+          analyticData = [];
+        }
         var found = false;
         for (var i = 0; i < analyticData.length; i++) {
           if (analyticData[i].name === newRowName) {
@@ -106,13 +109,13 @@ class App extends React.Component {
           analyticData.push({name: newRowName, count: 1});
         }
         console.log('Analytic updated:', snapshot.val());
-        set(child(this.props.userRef, 'analytic1'), analyticData).then(() => {
+        set(child(this.props.userRef, 'added_count'), analyticData).then(() => {
           console.log("Analytic data saved successfully!");
         }).catch((error) => {
           console.log("Analytic data could not be saved: " + error);
         });
 
-        if(this.state.analytic === 'analytic1') {
+        if(this.state.analytic === 'added_count') {
           this.setState((prevState) => ({
             ...prevState,
             analyticData: analyticData,
@@ -199,29 +202,33 @@ class App extends React.Component {
                   value={this.state.analytic}
                   onChange={this.handleAnalyticSelect}
                 >
-                  <MenuItem value={'analytic1'}>How often are items added?</MenuItem>
-                  <MenuItem value={'analytic2'}>How often do items expire?</MenuItem>
+                  <MenuItem value={'added_count'}>How often are items added?</MenuItem>
+                  <MenuItem value={'expired_count'}>How often do items expire?</MenuItem>
                 </Select>
               </FormControl>
-
-              <ResponsiveContainer width="80%" height={80*this.state.analyticData.length}>
-                { this.state.loadingAnalytic ?
-                  <Typography variant='h6' mb={1} >Loading...</Typography>
+              { this.state.loadingAnalytic ?
+                <Typography variant='h6' m={1} >Loading...</Typography>
+                :
+                (
+                  (this.state.analyticData === 'empty') ?
+                  <Typography variant='h6' m={1} >No data available</Typography>
                   :
-                  <BarChart
-                    layout="vertical"
-                    data={this.state.analyticData}
-                    margin={{ top: 20, right: 20, bottom: 5, left: 0 }}
-                  >
-                    <CartesianGrid stroke="#ccc" />
-                    <XAxis type="number" tickCount={10}/>
-                    <YAxis dataKey="name" type="category"/>
-                    <Legend formatter={(value, entry, index) => {return value.charAt(0).toUpperCase() + value.slice(1)}}/>
-                    <Bar dataKey="count" fill="#82ca9d" />
-                    <Tooltip />
-                  </BarChart>
-                }
-              </ResponsiveContainer>
+                  <ResponsiveContainer width="80%" height={80*this.state.analyticData.length}>
+                    <BarChart
+                      layout="vertical"
+                      data={this.state.analyticData}
+                      margin={{ top: 20, right: 20, bottom: 5, left: 0 }}
+                    >
+                      <CartesianGrid stroke="#ccc" />
+                      <XAxis type="number" tickCount={10}/>
+                      <YAxis dataKey="name" type="category"/>
+                      <Legend formatter={(value, entry, index) => {return value.charAt(0).toUpperCase() + value.slice(1)}}/>
+                      <Bar dataKey="count" fill="#82ca9d" />
+                      <Tooltip />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )
+              }
           </Paper>
         </Paper>
       </div>
