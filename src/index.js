@@ -124,8 +124,8 @@ function renderSignup(submitSignup) {
   );
 }
 
-// renderLogin(submitLogin);
-submitLogin(email, password);
+renderLogin(submitLogin);
+// submitLogin(email, password);
 // renderSignup(submitSignup);
 // renderApp();
 

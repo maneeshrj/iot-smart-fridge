@@ -15,6 +15,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { getDatabase, ref, onValue, child, set, update, get } from "firebase/database";
 import { Typography } from '@mui/material';
+import dayjs from 'dayjs';
 
 // THIS IS DEMO ANALYTICS DATA 
 // const data0 = [
@@ -108,7 +109,7 @@ class App extends React.Component {
         if (!found) {
           analyticData.push({name: newRowName, count: 1});
         }
-        console.log('Analytic updated:', snapshot.val());
+        console.log('Analytic updated:', analyticData);
         set(child(this.props.userRef, 'added_count'), analyticData).then(() => {
           console.log("Analytic data saved successfully!");
         }).catch((error) => {
@@ -132,6 +133,51 @@ class App extends React.Component {
   deleteRows = (ids) => {
     console.log("deleteRow called");
     const updatedRows = this.state.rows.filter((row) => !ids.includes(row.id));
+
+    // Update analytic data on expired items
+    let expiredItems = this.state.rows.filter((row) => (ids.includes(row.id) && dayjs(row.expiry_date).isBefore(dayjs().format('YYYY/MM/DD'))) );
+    let expiredItemNames = expiredItems.map((item) => item.name);
+    get(child(this.props.userRef, 'expired_count')).then((snapshot) => {
+      if (snapshot.exists()) {
+        var analyticData = snapshot.val();
+        if (analyticData === 'empty') {
+          analyticData = [];
+        }
+
+        for (var expiredItemName of expiredItemNames) {
+          var found = false;
+          for (var i = 0; i < analyticData.length; i++) {
+            if (analyticData[i].name === expiredItemName) {
+              analyticData[i].count += 1;
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            analyticData.push({name: expiredItemName, count: 1});
+          }
+        }
+
+        console.log('Analytic updated:', analyticData);
+        set(child(this.props.userRef, 'expired_count'), analyticData).then(() => {
+          console.log("expired_count updated successfully!");
+        }).catch((error) => {
+          console.log("expired_count could not be saved: " + error);
+        });
+        
+        if(this.state.analytic === 'expired_count') {
+          this.setState((prevState) => ({
+            ...prevState,
+            analyticData: analyticData,
+          }));
+        }
+      } else {
+        console.log("No analytic data available");
+      }
+    }).catch((error) => {
+      console.log('Error loading analytic: '+error);
+    });
+
     this.updateRows(updatedRows);
   }
 
@@ -255,7 +301,7 @@ class App extends React.Component {
                       margin={{ top: 20, right: 20, bottom: 5, left: 0 }}
                     >
                       <CartesianGrid stroke="#ccc" />
-                      <XAxis type="number" tickCount={10}/>
+                      <XAxis type="number" tickCount={10} allowDecimals={false} label={"days"}/>
                       <YAxis dataKey="name" type="category"/>
                       <Legend formatter={(value, entry, index) => {return value.charAt(0).toUpperCase() + value.slice(1)}}/>
                       <Bar dataKey="count" fill="#82ca9d" />

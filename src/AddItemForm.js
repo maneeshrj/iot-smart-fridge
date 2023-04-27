@@ -34,7 +34,8 @@ class AddItemForm extends React.Component {
             console.log('Got scan result from firebase:', scan);
             this.setState((prevState) => ({
                 ...prevState,
-                itemName: scan.result,
+                // itemName: scan.result,
+                itemName: scan.result.charAt(0).toUpperCase() + scan.result.slice(1),
                 scanning: scan.scanning,
             }));
         }
@@ -172,6 +173,7 @@ class AddItemForm extends React.Component {
                             fullWidth 
                             value={this.state.cost}
                             onChange={(e) => this.handleCostChange(e)}
+                            type='number'
                         />
                     </Grid>
                     
