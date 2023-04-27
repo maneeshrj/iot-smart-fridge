@@ -101,10 +101,22 @@ class SignupView extends React.Component {
               </Paper>
               <Paper>
                 <Stack direction="column" spacing={1} sx={{ m: 2 }}>
-                  <Checkbox checked={passwordLength} color="success" disabled={!this.state.password} />
-                  <Checkbox checked={passwordUpperCase} color="success" disabled={!this.state.password} />
-                  <Checkbox checked={passwordLowerCase} color="success" disabled={!this.state.password} />
-                  <Checkbox checked={passwordDigit} color="success" disabled={!this.state.password} />
+                  <Stack direction="row" alignItems="center">
+                    <Checkbox checked={passwordLength} color="success" disabled={!this.state.password} />
+                    <Typography variant="body1">At least 8 characters</Typography>
+                  </Stack>
+                  <Stack direction="row" alignItems="center">
+                    <Checkbox checked={passwordUpperCase} color="success" disabled={!this.state.password} />
+                    <Typography variant="body1">At least 1 uppercase letter</Typography>
+                  </Stack>
+                  <Stack direction="row" alignItems="center">
+                    <Checkbox checked={passwordLowerCase} color="success" disabled={!this.state.password} />
+                    <Typography variant="body1">At least 1 lowercase letter</Typography>
+                  </Stack>
+                  <Stack direction="row" alignItems="center">
+                    <Checkbox checked={passwordDigit} color="success" disabled={!this.state.password} />
+                    <Typography variant="body1">At least 1 digit</Typography>
+                  </Stack>
                 </Stack>
               </Paper>
         </Paper>
