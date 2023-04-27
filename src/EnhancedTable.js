@@ -395,7 +395,7 @@ class EnhancedTable extends React.Component {
               </TableBody>
             </Table>
           </TableContainer>
-          <AddItemForm addItem={this.props.addRow} startScan={this.props.startScan} />
+          <AddItemForm addItem={this.props.addRow} startScan={this.props.startScan} userRef={this.props.userRef} />
         </Paper>
       </Box>
     );

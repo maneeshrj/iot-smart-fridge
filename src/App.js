@@ -187,71 +187,83 @@ class App extends React.Component {
       });
     }
   };
-  
+
+  startScan = () => {
+    set(child(this.props.userRef, 'scanning'), true).then(() => {
+      console.log("Scan started successfully!");
+    }).catch((error) => {
+      console.log("Could not start scan: " + error);
+    });
+  }
 
   render() {
     return (
       <div className="App">
         <header className="App-header">
         </header>
-        <Paper 
-          className="App-body"
-          sx={{
-            m: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            bgcolor: 'linen',
-          }}
-        >
-          <Box sx={{ minWidth: 120 }} mb={3}>
-            <EnhancedTable 
-              rows={this.state.rows}
-              addRow={this.addRow} 
-              deleteRows={this.deleteRows}
-              updateRows={this.updateRows}
-            />
-          </Box>
-  
           <Paper 
-            sx={{ 
-              minWidth: 120, 
-              p: 2,
+            className="App-body"
+            sx={{
+              m: 2,
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center'
+              bgcolor: 'linen',
             }}
           >
-            <Typography variant='h6' mb={1} >Analytics</Typography>
-            <FormControl fullWidth>
-              <Select
-                value={this.state.analytic}
-                onChange={this.handleAnalyticSelect}
-              >
-                <MenuItem value={'added_count'}>How often are items added?</MenuItem>
-                <MenuItem value={'expired_count'}>How often do items expire?</MenuItem>
-              </Select>
-            </FormControl>
-            {this.state.loadingAnalytic ? (
-              <Typography variant='h6' m={1} >Loading...</Typography>
-            ) : this.state.analyticData === 'empty' ? (
-              <Typography variant='h6' m={1} >No data available</Typography>
-            ) : (
-              <ResponsiveContainer width="80%" height={80*this.state.analyticData.length}>
-                <BarChart
-                  layout="vertical"
-                  data={this.state.analyticData}
-                  margin={{ top: 20, right: 20, bottom: 5, left: 0 }}
+            <Box sx={{ minWidth: 120 }} mb={3}>
+              <EnhancedTable 
+                rows={this.state.rows}
+                addRow={this.addRow} 
+                deleteRows={this.deleteRows}
+                updateRows={this.updateRows}
+                // startScan={this.startScan}
+                userRef={this.props.userRef}
+              />
+            </Box>
+
+            <Paper 
+              sx={{ 
+                minWidth: 120, 
+                p: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+            >
+              <Typography variant='h6' mb={1} >Analytics</Typography>
+              <FormControl fullWidth>
+                <Select
+                  value={this.state.analytic}
+                  onChange={this.handleAnalyticSelect}
                 >
-                  <CartesianGrid stroke="#ccc" />
-                  <XAxis type="number" tickCount={10}/>
-                  <YAxis dataKey="name" type="category"/>
-                  <Legend formatter={(value, entry, index) => {return value.charAt(0).toUpperCase() + value.slice(1)}}/>
-                  <Bar dataKey="count" fill="#82ca9d" />
-                  <Tooltip />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
+                  <MenuItem value={'added_count'}>How often are items added?</MenuItem>
+                  <MenuItem value={'expired_count'}>How often do items expire?</MenuItem>
+                </Select>
+              </FormControl>
+              { this.state.loadingAnalytic ?
+                <Typography variant='h6' m={1} >Loading...</Typography>
+                :
+                (
+                  (this.state.analyticData === 'empty') ?
+                  <Typography variant='h6' m={1} >No data available</Typography>
+                  :
+                  <ResponsiveContainer width="95%" height={80*this.state.analyticData.length}>
+                    <BarChart
+                      layout="vertical"
+                      data={this.state.analyticData}
+                      margin={{ top: 20, right: 20, bottom: 5, left: 0 }}
+                    >
+                      <CartesianGrid stroke="#ccc" />
+                      <XAxis type="number" tickCount={10}/>
+                      <YAxis dataKey="name" type="category"/>
+                      <Legend formatter={(value, entry, index) => {return value.charAt(0).toUpperCase() + value.slice(1)}}/>
+                      <Bar dataKey="count" fill="#82ca9d" />
+                      <Tooltip />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )
+              }
           </Paper>
         </Paper>
       </div>

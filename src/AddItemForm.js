@@ -12,6 +12,9 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 
+import { getDatabase, ref, onValue, child, set, update, get } from "firebase/database";
+import { Typography } from '@mui/material';
+
 class AddItemForm extends React.Component {
     constructor(props) {
         super(props);
@@ -21,7 +24,30 @@ class AddItemForm extends React.Component {
             show: false,
             cost: 0,
             err: 'none',
+            scanning: false,
         };
+    }
+
+    componentDidMount() {
+        const updateScanResult = (snapshot) => {
+            const scan = snapshot.val();
+            console.log('Got scan result from firebase:', scan);
+            this.setState((prevState) => ({
+                ...prevState,
+                itemName: scan.result,
+                scanning: scan.scanning,
+            }));
+        }
+    
+        onValue(child(this.props.userRef, '/scan'), updateScanResult, 
+            function (errorObject) {
+                console.log("Failed to read scan result from firebase: " + errorObject.code);
+            }
+        );
+    }
+
+    componentWillUnmount() {
+        this.clearScan();
     }
 
     handleNameChange = (event) => {
@@ -58,6 +84,9 @@ class AddItemForm extends React.Component {
     };
 
     toggleShow = (newShow) => {
+        // if(!newShow) {
+        //     this.clearScan();
+        // }
         this.setState((prevState) => ({
             ...prevState,
             date: dayjs(),
@@ -79,7 +108,25 @@ class AddItemForm extends React.Component {
     
     startScan = () => {
         console.log('start scan');
-        this.props.startScan();
+        set(child(this.props.userRef, '/scan'), {scanning: true, result: ""}).then(() => {
+            console.log("Scan started successfully!");
+          }).catch((error) => {
+            console.log("Could not start scan: " + error);
+          });
+
+        // this.setState((prevState) => ({
+        //     ...prevState, 
+        //     scanning: true
+        // }));
+        // this.props.startScan();
+    }
+
+    clearScan = () => {
+        set(child(this.props.userRef, '/scan'), {scanning: false, result: ""}).then(() => {
+            console.log("Cleared scan result");
+        }).catch((error) => {
+            console.log("Error clearing scan result: " + error);
+        });
     }
 
     render() {
@@ -93,8 +140,9 @@ class AddItemForm extends React.Component {
                     flexDirection: 'column',
                 }}
                 className='AddItemForm'
-                onKeyDown={this.handleKeyDown}
+                onKeyDown={(e) => this.handleKeyDown(e)}
             >
+                {/* <Typography>{this.state.itemName}</Typography> */}
                 <Grid container spacing={2}>
                     <Grid item md={5} xs={12}>
                         <TextField 
@@ -102,7 +150,9 @@ class AddItemForm extends React.Component {
                             variant="outlined" 
                             error={this.state.err === 'name' ? true : false}
                             fullWidth 
-                            onChange={this.handleNameChange}
+                            value={this.state.itemName}
+                            onChange={(e) => this.handleNameChange(e)}
+                            {...(this.state.scanning ? {disabled: true} : {})}
                         />
                     </Grid>
                     <Grid item md={5} xs={12}>
@@ -110,7 +160,7 @@ class AddItemForm extends React.Component {
                             <DatePicker
                                 label="Expiry Date"
                                 value={this.state.date}
-                                onChange={this.handleDateChange}
+                                onChange={(e) => this.handleDateChange(e)}
                                 sx={{ width: '100%' }}
                             />
                         </LocalizationProvider>
@@ -121,7 +171,7 @@ class AddItemForm extends React.Component {
                             variant="outlined" 
                             fullWidth 
                             value={this.state.cost}
-                            onChange={this.handleCostChange}
+                            onChange={(e) => this.handleCostChange(e)}
                         />
                     </Grid>
                     
@@ -153,14 +203,19 @@ class AddItemForm extends React.Component {
                                 width: '100%'
                             }}
                             color="info"
+                            {...(this.state.scanning ? {disabled: true} : {})}
                         >
-                            <CameraAltIcon />
+                            {(!this.state.scanning)? 
+                                <CameraAltIcon />
+                                :
+                                <MoreHorizIcon />
+                            }
                         </Button>
                     </Grid>
                     <Grid item md={8} xs={4}>
                         <Button
                             aria-label="add"
-                            onClick={() => this.handleSubmit()}
+                            onClick={(e) => this.handleSubmit(e)}
                             variant="outlined"
                             sx={{
                                 alignSelf: 'center',
@@ -169,6 +224,7 @@ class AddItemForm extends React.Component {
                                 width: '100%'
                             }}
                             color="warning"
+                            {...(this.state.scanning ? {disabled: true} : {})}
                         >
                             <AddIcon />
                         </Button>
