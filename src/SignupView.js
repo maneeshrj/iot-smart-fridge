@@ -56,6 +56,12 @@ class SignupView extends React.Component {
     this.props.submitSignup(this.state.username, this.state.password);
   }
 
+  handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      this.submitSignup();
+    }
+  }
+
   render() {
     const {
       passwordLength,
@@ -86,16 +92,17 @@ class SignupView extends React.Component {
               <Paper 
                 sx={{ minWidth: 120, p: 2 }}
               >
-                <FormControl fullWidth>
+                <FormControl fullWidth onKeyDown={this.handleKeyDown}>
                   <Stack 
                     spacing={2} 
                     direction="column"
                     textAlign={'center'}
                   >
                     <Typography variant="h4">Smart Fridge</Typography>
-                    <TextField id="outlined-basic" label="Username" variant="outlined" onChange={this.setUsername} />
-                    <TextField id="outlined-basic" label="Password" variant="outlined" onChange={this.setPassword} type='password' />
-                    <Button variant="outlined" color='warning' onClick={this.submitLogin}>Login</Button>
+                    <TextField id="username" label="Username" variant="outlined" onChange={this.setUsername} />
+                    <TextField id="password" label="Password" variant="outlined" onChange={this.setPassword} type='password' />
+                    <Button variant="outlined" color='secondary' onClick={this.submitSignup}>Sign Up</Button>
+                    <Button variant="text" color='warning' onClick={() => this.props.switch('login')}>Login</Button>
                   </Stack>
                 </FormControl>
               </Paper>

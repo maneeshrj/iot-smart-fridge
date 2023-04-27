@@ -70,6 +70,17 @@ function submitSignup(email, password) {
     console.log(user.email);
 
     var userRef = ref(database, 'users/' + user.uid);
+
+    // Initialize user data
+    set(userRef, {
+      items: 'empty',
+      added_count: 'empty',
+      expired_count: 'empty',
+      scan: {
+        result: '',
+        scanning: false,
+      },
+    });
     renderApp(userRef);
   })
   .catch((error) => {
@@ -80,6 +91,14 @@ function submitSignup(email, password) {
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+
+function switchLoginSignup(page) {
+  if (page === 'login') {
+    renderLogin(submitLogin);
+  } else if (page === 'signup') {
+    renderSignup(submitSignup);
+  }
+}
 
 function renderApp(userRef) {
   root.render(
@@ -92,21 +111,22 @@ function renderApp(userRef) {
 function renderLogin(submitLogin) {
   root.render(
     <React.StrictMode>
-      <Login submitLogin={submitLogin} />
+      <Login submitLogin={submitLogin} switch={switchLoginSignup} />
     </React.StrictMode>
   );
 }
-
 
 function renderSignup(submitSignup) {
   root.render(
     <React.StrictMode>
-      <Signup submitSignup={submitSignup} />
+      <Signup submitSignup={submitSignup} switch={switchLoginSignup} />
     </React.StrictMode>
   );
 }
-//renderLogin(submitLogin);
+
+// renderLogin(submitLogin);
 submitLogin(email, password);
+// renderSignup(submitSignup);
 // renderApp();
 
 // If you want to start measuring performance in your app, pass a function

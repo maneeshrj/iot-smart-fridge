@@ -81,9 +81,10 @@ class LoginView extends React.Component {
                       textAlign={'center'}
                     >
                       <Typography variant="h4">Smart Fridge</Typography>
-                      <TextField id="outlined-basic" label="Username" variant="outlined" onChange={this.setUsername} />
-                      <TextField id="outlined-basic" label="Password" variant="outlined" onChange={this.setPassword} type='password' />
+                      <TextField id="username" label="Username" variant="outlined" onChange={this.setUsername} />
+                      <TextField id="password" label="Password" variant="outlined" onChange={this.setPassword} type='password' />
                       <Button variant="outlined" color='warning' onClick={this.submitLogin}>Login</Button>
+                      <Button variant="text" color='secondary' onClick={() => this.props.switch('signup')}>Sign Up</Button>
                     </Stack>
                   </FormControl>
                 </Paper>
