@@ -7,7 +7,7 @@ import Signup from './SignupView';
 import reportWebVitals from './reportWebVitals';
 
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { getDatabase, ref, onValue, child, set, update, get } from "firebase/database";
 
 // TODO: Replace the following with your app's Firebase project configuration
@@ -62,6 +62,23 @@ function submitLogin(email, password) {
   });
 }
 
+function submitSignup(email, password) {
+  createUserWithEmailAndPassword(auth, email, password)
+  .then((userCredential) => {
+    // Signed up
+    const user = userCredential.user;
+    console.log(user.email);
+
+    var userRef = ref(database, 'users/' + user.uid);
+    renderApp(userRef);
+  })
+  .catch((error) => {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    console.log(errorCode, "\n", errorMessage);
+  });
+}
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 function renderApp(userRef) {
@@ -80,6 +97,14 @@ function renderLogin(submitLogin) {
   );
 }
 
+
+function renderSignup(submitSignup) {
+  root.render(
+    <React.StrictMode>
+      <Signup submitSignup={submitSignup} />
+    </React.StrictMode>
+  );
+}
 //renderLogin(submitLogin);
 submitLogin(email, password);
 // renderApp();
