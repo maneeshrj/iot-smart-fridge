@@ -195,8 +195,8 @@ def stream_handler(message):
         print('Starting YOLO...')
         label = run()
         print(label)
-        db.child("users").child(userID).child('scan_result').set(label, user['idToken'])
-        db.child("users").child(userID).child('scanning').set(False, user['idToken'])
+        db.child("users").child(userID).child('scan').child('result').set(label, user['idToken'])
+        db.child("users").child(userID).child('scan').child('scanning').set(False, user['idToken'])
 
-test_stream = db.child("users").child(userID).child('scanning').stream(stream_handler, user['idToken'])
+test_stream = db.child("users").child(userID).child('scan').child('scanning').stream(stream_handler, user['idToken'])
 print('Initialized stream')

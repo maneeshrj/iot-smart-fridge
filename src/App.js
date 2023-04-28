@@ -301,7 +301,7 @@ class App extends React.Component {
                       margin={{ top: 20, right: 20, bottom: 5, left: 0 }}
                     >
                       <CartesianGrid stroke="#ccc" />
-                      <XAxis type="number" tickCount={10} allowDecimals={false} label={"days"}/>
+                      <XAxis type="number" tickCount={10} allowDecimals={false} />
                       <YAxis dataKey="name" type="category"/>
                       <Legend formatter={(value, entry, index) => {return value.charAt(0).toUpperCase() + value.slice(1)}}/>
                       <Bar dataKey="count" fill="#82ca9d" />
